@@ -1,0 +1,50 @@
+#! /usr/bin/env node
+
+var rd = require("rd");
+var fs = require("fs");
+var babel = require("babel-core");
+var watch = require("node-watch");
+var uglifyJS = require('uglify-js');
+var args = process.argv.splice(2);
+var options = JSON.parse(fs.readFileSync('package.json'));
+var versions = args[0];
+
+if (!versions) {
+  return console.error("versions is undefined")
+}
+
+function createCodeFile() {
+  rd.read('src/' + versions, function(err, files) {
+    if (err) throw err;
+    var arr, dir, target, targets = {};
+    files.forEach(function(item) {
+      if (item.endsWith(".js") && !item.endsWith("test.js")) {
+        arr = item.split("/");
+        dir = arr[arr.length - 2];
+        targetList = targets[dir];
+        if (Array.isArray(targetList)) {
+          targetList.push(item);
+          targets[dir] = targetList;
+        } else {
+          targets[dir] = [item];
+        }
+      }
+    });
+    var code = "";
+    var targetList = targets[versions];
+    if (targetList) {
+      targetList.sort(function(a, b){
+        return a > b;
+      }).forEach(function(item) {
+        code += fs.readFileSync(item, "utf-8");
+      })
+      code = babel.transform(code, options.babel).code
+      fs.writeFileSync("test/baic.js", code);
+      console.info("===========> test/baic.js", new Date())
+    }
+  });
+}
+
+watch('src/' + versions, createCodeFile)
+
+createCodeFile();

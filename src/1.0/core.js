@@ -1,21 +1,21 @@
 'use strict';
 console.time('core');;
-(function(global, factory) {
+(((global, factory) => {
 
 	if (typeof module === "object" && typeof module.exports === "object") {
 		module.exports = global.document ?
 			factory(global, true) :
-			w => {
+			(w => {
 				if (!w.document) {
 					throw new Error("Baic requires a window with a document");
 				}
 				return factory(w);
-			};
+			});
 	} else {
 		factory(global);
 	}
 
-}(typeof window !== "undefined" ? window : this, (window, noGlobal) => {
+})(typeof window !== "undefined" ? window : this, (window, noGlobal) => {
 
 	var document = window.document,
 		OBJECT_PROTOTYPE = Object.prototype,
@@ -171,6 +171,9 @@ console.time('core');;
 
 	Baic.extend({
 		nop() {},
+		nopp() {
+			return new Promise(Baic.nop);
+		},
 		hasOwn(object, property) {
 			return OBJECT_PROTOTYPE.hasOwnProperty.call(object, property);
 		},
@@ -181,7 +184,7 @@ console.time('core');;
 		isString: _checktype("string"),
 		isBoolean: _checktype("boolean"),
 		isArray: Array.isArray,
-		isNumber: _checktype("number", function(obj) {
+		isNumber: _checktype("number", obj => {
 			return !isNaN(obj);
 		}),
 		isNull: _checktype("null"),
@@ -220,7 +223,7 @@ console.time('core');;
 		},
 		random(min, max) {
 			var rand = Math.floor(min + Math.random() * (max - min));
-			rand = isNaN(rand) ? (function(a, b) {
+			rand = isNaN(rand) ? ((a, b) => {
 				!Baic.isUndefined(b) || (b = a, a = 0);
 				var c = b - a,
 					e = Math.random();
@@ -289,85 +292,109 @@ console.time('core');;
 		}
 	});
 
-	Baic.extend(Number, {
-		add(arg1, arg2) {
-			arg1 = arg1 || 0;
-			arg2 = arg2 || 0;
-			var r1, r2, m, c;
-			try {
-				r1 = arg1.toString().split(".")[1].length;
-			} catch (e) {
-				r1 = 0;
-			}
-			try {
-				r2 = arg2.toString().split(".")[1].length;
-			} catch (e) {
-				r2 = 0;
-			}
-			c = Math.abs(r1 - r2);
-			m = Math.pow(10, Math.max(r1, r2));
-			if (c > 0) {
-				var cm = Math.pow(10, c);
-				if (r1 > r2) {
-					arg1 = Number(arg1.toString().replace(".", ""));
-					arg2 = Number(arg2.toString().replace(".", "")) * cm;
-				} else {
-					arg1 = Number(arg1.toString().replace(".", "")) * cm;
-					arg2 = Number(arg2.toString().replace(".", ""));
-				}
-			} else {
+	var _add = (arg1, arg2) => {
+		arg1 = arg1 || 0;
+		arg2 = arg2 || 0;
+		var r1, r2, m, c;
+		try {
+			r1 = arg1.toString().split(".")[1].length;
+		} catch (e) {
+			r1 = 0;
+		}
+		try {
+			r2 = arg2.toString().split(".")[1].length;
+		} catch (e) {
+			r2 = 0;
+		}
+		c = Math.abs(r1 - r2);
+		m = Math.pow(10, Math.max(r1, r2));
+		if (c > 0) {
+			var cm = Math.pow(10, c);
+			if (r1 > r2) {
 				arg1 = Number(arg1.toString().replace(".", ""));
+				arg2 = Number(arg2.toString().replace(".", "")) * cm;
+			} else {
+				arg1 = Number(arg1.toString().replace(".", "")) * cm;
 				arg2 = Number(arg2.toString().replace(".", ""));
 			}
-			return (arg1 + arg2) / m;
+		} else {
+			arg1 = Number(arg1.toString().replace(".", ""));
+			arg2 = Number(arg2.toString().replace(".", ""));
+		}
+		return (arg1 + arg2) / m;
+	}
+
+	var _sub = (arg1, arg2) => {
+		arg1 = arg1 || 0;
+		arg2 = arg2 || 0;
+		var r1, r2, m, n;
+		try {
+			r1 = arg1.toString().split(".")[1].length;
+		} catch (e) {
+			r1 = 0;
+		}
+		try {
+			r2 = arg2.toString().split(".")[1].length;
+		} catch (e) {
+			r2 = 0;
+		}
+		m = Math.pow(10, Math.max(r1, r2)); //last modify by deeka //动态控制精度长度
+		n = (r1 >= r2) ? r1 : r2;
+		return ((arg1 * m - arg2 * m) / m).toFixed(n);
+	}
+
+	var _mul = (arg1, arg2) => {
+		arg1 = arg1 || 0;
+		arg2 = arg2 || 0;
+		var m = 0,
+			s1 = arg1.toString(),
+			s2 = arg2.toString();
+		try {
+			m += s1.split(".")[1].length;
+		} catch (e) {}
+		try {
+			m += s2.split(".")[1].length;
+		} catch (e) {}
+		return Number(s1.replace(".", "")) * Number(s2.replace(".", "")) / Math.pow(10, m);
+	}
+
+	var _div = (arg1, arg2) => {
+		arg1 = arg1 || 0;
+		arg2 = arg2 || 0;
+		var t1 = 0,
+			t2 = 0,
+			r1, r2;
+		try {
+			t1 = arg1.toString().split(".")[1].length;
+		} catch (e) {}
+		try {
+			t2 = arg2.toString().split(".")[1].length;
+		} catch (e) {}
+		r1 = Number(arg1.toString().replace(".", ""));
+		r2 = Number(arg2.toString().replace(".", ""));
+		return (r1 / r2) * Math.pow(10, t2 - t1);
+	}
+
+	Baic.extend(Number, {
+		add() {
+			return arguments.toArray().reduce((arg1, arg2) => {
+				return _add(arg1, arg2);
+			})
 		},
-		sub(arg1, arg2) {
-			arg1 = arg1 || 0;
-			arg2 = arg2 || 0;
-			var r1, r2, m, n;
-			try {
-				r1 = arg1.toString().split(".")[1].length;
-			} catch (e) {
-				r1 = 0;
-			}
-			try {
-				r2 = arg2.toString().split(".")[1].length;
-			} catch (e) {
-				r2 = 0;
-			}
-			m = Math.pow(10, Math.max(r1, r2)); //last modify by deeka //动态控制精度长度
-			n = (r1 >= r2) ? r1 : r2;
-			return ((arg1 * m - arg2 * m) / m).toFixed(n);
+		sub() {
+			return arguments.toArray().reduce((arg1, arg2) => {
+				return _sub(arg1, arg2);
+			})
 		},
-		mul(arg1, arg2) {
-			arg1 = arg1 || 0;
-			arg2 = arg2 || 0;
-			var m = 0,
-				s1 = arg1.toString(),
-				s2 = arg2.toString();
-			try {
-				m += s1.split(".")[1].length;
-			} catch (e) {}
-			try {
-				m += s2.split(".")[1].length;
-			} catch (e) {}
-			return Number(s1.replace(".", "")) * Number(s2.replace(".", "")) / Math.pow(10, m);
+		mul() {
+			return arguments.toArray().reduce((arg1, arg2) => {
+				return _mul(arg1, arg2);
+			})
 		},
 		div(arg1, arg2) {
-			arg1 = arg1 || 0;
-			arg2 = arg2 || 0;
-			var t1 = 0,
-				t2 = 0,
-				r1, r2;
-			try {
-				t1 = arg1.toString().split(".")[1].length;
-			} catch (e) {}
-			try {
-				t2 = arg2.toString().split(".")[1].length;
-			} catch (e) {}
-			r1 = Number(arg1.toString().replace(".", ""));
-			r2 = Number(arg2.toString().replace(".", ""));
-			return (r1 / r2) * Math.pow(10, t2 - t1);
+			return arguments.toArray().reduce((arg1, arg2) => {
+				return _div(arg1, arg2);
+			})
 		}
 	});
 
@@ -382,17 +409,17 @@ console.time('core');;
 				}
 			}
 		},
-		add(num) {
-			return Number.add.call(this, this, num);
+		add() {
+			return Number.add.apply(this, [].concat.apply(this, arguments.toArray()));
 		},
-		sub(num) {
-			return Number.sub.call(this, this, num);
+		sub() {
+			return Number.sub.apply(this, [].concat.apply(this, arguments.toArray()));
 		},
-		mul(num) {
-			return Number.mul.call(this, this, num);
+		mul() {
+			return Number.mul.apply(this, [].concat.apply(this, arguments.toArray()));
 		},
-		div(num) {
-			return Number.div.call(this, this, num);
+		div() {
+			return Number.div.apply(this, [].concat.apply(this, arguments.toArray()));
 		}
 	});
 

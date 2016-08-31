@@ -19,4 +19,34 @@
 <!-- js -->
 <script src="baic.js"></script>
 <script>
+  Baic.ready(() => {
+    var A = Object.extends({
+      A:2,
+      static: {
+        A: 1
+      }
+    })
+
+    var B = A.extends({
+      B:3,
+      static: {
+        B:2
+      }
+    })
+
+    var C = B.extends(function(){
+      return {
+        C:4,
+        static: {
+          C: 3
+        }
+      }
+    })
+
+    var a = new A();
+    var b = new B();
+    var c = new C();
+
+    console.log(a.A, b.A, b.B, C.C, c.C);
+  })
 </script>

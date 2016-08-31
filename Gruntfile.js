@@ -44,7 +44,8 @@ module.exports = function(grunt) {
           },
           dead_code: true,
           unused: true,
-          loops: true
+          loops: true,
+          drop_console: true
         },
         mangle: false,
         sourceMap: true,
@@ -58,7 +59,7 @@ module.exports = function(grunt) {
       },
       "1.0": {
         files: {
-          "build/1.0/baic.min.js": ["mark/**/*.js", "!**/test.js"]
+          "build/1.0/baic.min.js": ["mark/**/core.js", "mark/**/*.js", "!**/test.js"]
         }
       }
     }

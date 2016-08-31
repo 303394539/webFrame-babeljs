@@ -7,3 +7,4 @@ node_modules
 *.esproj
 *.DS_Store
 .idea
+test/baic.js

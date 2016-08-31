@@ -1,5 +1,21 @@
 console.time('storage');;
-(() => {
+((global, factory) => {
+  if (typeof module === "object" && typeof module.exports === "object") {
+    module.exports = global.Baic ?
+      factory(global, global.Baic) :
+      ((w, frame) => {
+        if (!w.Baic) {
+          throw new Error("store requires with Baic");
+        }
+        return factory(w, frame);
+      });
+  } else {
+    if (!global.Baic) {
+      throw new Error("store requires with Baic");
+    }
+    factory(global, global.Baic);
+  }
+})(typeof window !== "undefined" ? window : this, (window, Baic) => {
   'use strict';
 
   var _isValidKey = new RegExp("^[^\\x00-\\x20\\x7f\\(\\)<>@,;:\\\\\\\"\\[\\]\\?=\\{\\}\\/\\u0080-\\uffff]+\x24");
@@ -87,5 +103,12 @@ console.time('storage');;
     }
   });
 
-})();
+  if (typeof define === "function" && define.amd) {
+    define("Baic", [], () => {
+      return Baic;
+    });
+  }
+
+  return Baic;
+})
 console.timeEnd('storage');

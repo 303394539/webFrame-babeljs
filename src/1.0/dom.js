@@ -1,6 +1,23 @@
 console.time('dom');;
-(() => {
-  'use strict';
+((global, factory) => {
+  if (typeof module === "object" && typeof module.exports === "object") {
+    module.exports = global.Baic ?
+      factory(global, global.Baic) :
+      ((w, frame) => {
+        if (!w.Baic) {
+          throw new Error("dom requires with Baic");
+        }
+        return factory(w, frame);
+      });
+  } else {
+    if (!global.Baic) {
+      throw new Error("dom requires with Baic");
+    }
+    factory(global, global.Baic);
+  }
+})(typeof window !== "undefined" ? window : this, (window, Baic) => {
+'use strict';
+
   var EVENT_PREFIX = /^on[A-Z]/,
     ELEMENT_ID = 1;
 
@@ -219,15 +236,6 @@ console.time('dom');;
   });
 
   Baic.extend({
-    VENDORS: (() => {
-      var styles = document.defaultView.getComputedStyle(document.documentElement, "") || window.getComputedStyle(document.documentElement, "") || "";
-      if (!styles) return ['-webkit-', '-moz-', '-ms-', '-o-', ''];
-      var vendors = Array.prototype.slice
-        .call(styles)
-        .join('')
-        .match(/-(moz|webkit|ms|o)-/);
-      return Baic.isArray(vendors) ? [""].concat(vendors[0]) : (styles.OLink === '' && ['', 'o']);
-    })(),
     createElements: _createElements,
     b: _createElements,
     createElementPrepend(obj, parentNode) {
@@ -376,5 +384,12 @@ console.time('dom');;
     return nodes;
   }
 
-})();
+  if (typeof define === "function" && define.amd) {
+    define("Baic", [], () => {
+      return Baic;
+    });
+  }
+
+  return Baic;
+})
 console.timeEnd('dom');

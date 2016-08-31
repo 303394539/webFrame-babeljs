@@ -1,5 +1,21 @@
 console.time('tpl');;
-(() => {
+((global, factory) => {
+  if (typeof module === "object" && typeof module.exports === "object") {
+    module.exports = global.Baic ?
+      factory(global, global.Baic) :
+      ((w, frame) => {
+        if (!w.Baic) {
+          throw new Error("tpl requires with Baic");
+        }
+        return factory(w, frame);
+      });
+  } else {
+    if (!global.Baic) {
+      throw new Error("tpl requires with Baic");
+    }
+    factory(global, global.Baic);
+  }
+})(typeof window !== "undefined" ? window : this, (window, Baic) => {
   'use strict';
 
   var _Tpl = Baic.nop
@@ -129,5 +145,12 @@ console.time('tpl');;
     parseStr: _parseStr
   })
 
-})();
+  if (typeof define === "function" && define.amd) {
+    define("Baic", [], () => {
+      return Baic;
+    });
+  }
+
+  return Baic;
+})
 console.timeEnd('tpl');

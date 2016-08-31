@@ -1,5 +1,21 @@
 console.time('touch');;
-(() => {
+((global, factory) => {
+  if (typeof module === "object" && typeof module.exports === "object") {
+    module.exports = global.Baic ?
+      factory(global, global.Baic) :
+      ((w, frame) => {
+        if (!w.Baic) {
+          throw new Error("touch requires with Baic");
+        }
+        return factory(w, frame);
+      });
+  } else {
+    if (!global.Baic) {
+      throw new Error("touch requires with Baic");
+    }
+    factory(global, global.Baic);
+  }
+})(typeof window !== "undefined" ? window : this, (window, Baic) => {
   'use strict';
 
   var EVENT;
@@ -31,7 +47,7 @@ console.time('touch');;
     }
   });
 
-  Baic(function() {
+  Baic(() => {
     Baic(document).on('touchstart', _onTouchStart)
       .on('touchmove', _onTouchMove)
       .on('touchend', _onTouchEnd)
@@ -222,5 +238,12 @@ console.time('touch');;
     }
   }
 
-})();
+  if (typeof define === "function" && define.amd) {
+    define("Baic", [], () => {
+      return Baic;
+    });
+  }
+
+  return Baic;
+})
 console.timeEnd('touch');

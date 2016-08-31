@@ -1,10 +1,22 @@
 console.time('fetch');;
-(() => {
-  'use strict';
-
-  if (window.fetch) {
-    return
+((global, factory) => {
+  if (typeof module === "object" && typeof module.exports === "object") {
+    module.exports = global.Baic ?
+      factory(global, global.Baic, true) :
+      ((w, frame) => {
+        if (!w.Baic) {
+          throw new Error("fetch requires with Baic");
+        }
+        return factory(w, frame);
+      });
+  } else {
+    if (!global.Baic) {
+      throw new Error("fetch requires with Baic");
+    }
+    factory(global, global.Baic);
   }
+})(typeof window !== "undefined" ? window : this, (window, Baic, noFrame) => {
+'use strict';
 
   function _normalizeName(name) {
     if (typeof name !== 'string') {
@@ -181,7 +193,7 @@ console.time('fetch');;
 
     if (support.formData) {
       this.formData = () => {
-        return this.text().then(decode)
+        return this.text().then(_decode)
       }
     }
 
@@ -195,7 +207,7 @@ console.time('fetch');;
   // HTTP methods whose capitalization should be normalized
   var methods = ['DELETE', 'GET', 'HEAD', 'OPTIONS', 'POST', 'PUT']
 
-  function normalizeMethod(method) {
+  function _normalizeMethod(method) {
     var upcased = method.toUpperCase()
     return (methods.indexOf(upcased) > -1) ? upcased : method
   }
@@ -226,7 +238,7 @@ console.time('fetch');;
     if (options.headers || !this.headers) {
       this.headers = new Headers(options.headers)
     }
-    this.method = normalizeMethod(options.method || this.method || 'GET')
+    this.method = _normalizeMethod(options.method || this.method || 'GET')
     this.mode = options.mode || this.mode || null
     this.referrer = null
 
@@ -236,11 +248,13 @@ console.time('fetch');;
     this._initBody(body)
   }
 
-  Request.prototype.clone = () => {
-    return new Request(this)
-  }
+  Baic.extend(Request.prototype, {
+    clone() {
+      return new Request(this)
+    }
+  })
 
-  function decode(body) {
+  function _decode(body) {
     var form = new FormData()
     body.trim().split('&').forEach(bytes => {
       if (bytes) {
@@ -253,7 +267,7 @@ console.time('fetch');;
     return form
   }
 
-  function headers(xhr) {
+  function _headers(xhr) {
     var head = new Headers()
     var pairs = xhr.getAllResponseHeaders().trim().split('\n')
     pairs.forEach(header => {
@@ -283,44 +297,43 @@ console.time('fetch');;
 
   Body.call(Response.prototype)
 
-  Response.prototype.clone = () => {
-    return new Response(this._bodyInit, {
-      status: this.status,
-      statusText: this.statusText,
-      headers: new Headers(this.headers),
-      url: this.url
-    })
-  }
-
-  Response.error = () => {
-    var response = new Response(null, {
-      status: 0,
-      statusText: ''
-    })
-    response.type = 'error'
-    return response
-  }
-
-  var redirectStatuses = [301, 302, 303, 307, 308]
-
-  Response.redirect = (url, status) => {
-    if (redirectStatuses.indexOf(status) === -1) {
-      throw new RangeError('Invalid status code')
+  Baic.extend(Response.prototype, {
+    clone() {
+      return new Response(this._bodyInit, {
+        status: this.status,
+        statusText: this.statusText,
+        headers: new Headers(this.headers),
+        url: this.url
+      })
     }
+  })
 
-    return new Response(null, {
-      status: status,
-      headers: {
-        location: url
+  Baic.extend(Response, {
+    error() {
+      var response = new Response(null, {
+        status: 0,
+        statusText: ''
+      })
+      response.type = 'error'
+      return response
+    },
+    redirect(url, status) {
+      if (_redirectStatuses.indexOf(status) === -1) {
+        throw new RangeError('Invalid status code')
       }
-    })
-  }
 
-  window.Headers = Headers;
-  window.Request = Request;
-  window.Response = Response;
+      return new Response(null, {
+        status: status,
+        headers: {
+          location: url
+        }
+      })
+    }
+  })
 
-  window.fetch = (input, init) => {
+  var _redirectStatuses = [301, 302, 303, 307, 308]
+
+  var Fetch = (input, init) => {
     return new Promise((resolve, reject) => {
       var request
       if (Request.prototype.isPrototypeOf(input) && !init) {
@@ -353,7 +366,7 @@ console.time('fetch');;
         var options = {
           status: status,
           statusText: xhr.statusText,
-          headers: headers(xhr),
+          headers: _headers(xhr),
           url: responseURL()
         }
         var body = 'response' in xhr ? xhr.response : xhr.responseText;
@@ -381,8 +394,21 @@ console.time('fetch');;
       xhr.send(typeof request._bodyInit === 'undefined' ? null : request._bodyInit)
     })
   }
-  
-  window.fetch.polyfill = true
 
-})();
+  Baic.extend(Fetch, {
+    polyfill: true
+  })
+
+  if (typeof define === "function" && define.amd) {
+    define("Fetch", [], () => {
+      return Fetch;
+    });
+  }
+
+  if (typeof noFrame === "undefined") {
+    (Baic.fetch = Fetch) && ("fetch" in window || (window.fetch = Fetch));
+  }
+
+  return Fetch;
+})
 console.timeEnd('fetch');

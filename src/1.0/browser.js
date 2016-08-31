@@ -1,10 +1,26 @@
 console.time('browser');;
-(() => {
-  'use strict';
+((global, factory) => {
+  if (typeof module === "object" && typeof module.exports === "object") {
+    module.exports = global.Baic ?
+      factory(global, global.Baic, true) :
+      ((w, frame) => {
+        if (!w.Baic) {
+          throw new Error("browser requires with Baic");
+        }
+        return factory(w, frame);
+      });
+  } else {
+    if (!global.Baic) {
+      throw new Error("browser requires with Baic");
+    }
+    factory(global, global.Baic);
+  }
+})(typeof window !== "undefined" ? window : this, (window, Baic, noFrame) => {
+'use strict';
 
-  var userAgent = navigator.userAgent.toLowerCase(),
-    msPointerEnabled = !!window.navigator.msPointerEnabled,
-    EXPS = {
+  var _userAgent = window.navigator.userAgent.toLowerCase(),
+    _msPointerEnabled = !!window.navigator.msPointerEnabled,
+    _EXPS = {
       mobile: /iphone|android|windows phone|ipod|ipad|apple.*mobile.*safari/,
       ios: /iphone|ipod|ipad/,
       iphone: /(iphone\sos)\s([\d_]+)/,
@@ -14,30 +30,43 @@ console.time('browser');;
       version: /.*(?:rv|chrome|webkit|version|ie)[\/: ](.+?)([ \\);]|$)/,
       wx: /micromessenger\/([\d\.]+)/
     },
-    match;
+    _match;
 
-  Baic.extend({
-    browser: {
-      touch: (('ontouchstart' in window) || msPointerEnabled),
-      gesture: (('ongesturestart' in window) || msPointerEnabled),
-      ios: EXPS.ios.test(userAgent),
-      wx: EXPS.wx.test(userAgent),
-      android: EXPS.android.test(userAgent),
-      mobile: EXPS.mobile.test(userAgent),
-      version: (userAgent.match(EXPS.mobile.test(userAgent) ? EXPS.mversion : EXPS.version) || [])[1] || ""
+  var Browser = {
+    touch: (('ontouchstart' in window) || _msPointerEnabled),
+    gesture: (('ongesturestart' in window) || _msPointerEnabled),
+    ios: _EXPS.ios.test(_userAgent),
+    wx: _EXPS.wx.test(_userAgent),
+    android: _EXPS.android.test(_userAgent),
+    mobile: _EXPS.mobile.test(_userAgent)
+  }
+
+  Browser.version = (() => {
+    if (Browser.ios) {
+      if (_match = _userAgent.match(_EXPS.iphone) || _userAgent.match(_EXPS.ipad) || _userAgent.match(_EXPS.ipod)) {
+        return _match[2].replace(/_/g, '.');
+      }
+    } else if (Browser.android) {
+      if (_match = _userAgent.match(_EXPS.android)) {
+        return _match[2];
+      }
+    } else if (Browser.wx) {
+      return (_userAgent.match(_EXPS.wx) || [])[1] || "0";
+    } else {
+      return (_userAgent.match(_EXPS.mobile.test(_userAgent) ? _EXPS.mversion : _EXPS.version) || [])[1] || "";
     }
-  });
+  })();
 
-  if (Baic.browser.ios) {
-    match = userAgent.match(EXPS.iphone) || userAgent.match(EXPS.ipad) || userAgent.match(EXPS.ipod);
-    if (match) Baic.browser.version = match[2].replace(/_/g, '.');
-  } else if (Baic.browser.android) {
-    match = userAgent.match(EXPS.android)
-    if (match) Baic.browser.version = match[2];
-  }
-  if (Baic.browser.wx) {
-    Baic.browser.wxversion = (userAgent.match(EXPS.wx) || [])[1] || "0";
+  if (typeof define === "function" && define.amd) {
+    define("Browser", [], () => {
+      return Browser;
+    });
   }
 
-})();
+  if (typeof noFrame === "undefined") {
+    Baic.browser = Browser;
+  }
+
+  return Browser;
+})
 console.timeEnd('browser');

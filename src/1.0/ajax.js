@@ -1,11 +1,28 @@
 console.time('ajax');;
-(() => {
+((global, factory) => {
+  if (typeof module === "object" && typeof module.exports === "object") {
+    module.exports = global.Baic ?
+      factory(global, global.Baic, true) :
+      ((w, frame) => {
+        if (!w.Baic) {
+          throw new Error("ajax requires with Baic");
+        }
+        return factory(w, frame);
+      });
+  } else {
+    if (!global.Baic) {
+      throw new Error("ajax requires with Baic");
+    }
+    factory(global, global.Baic);
+  }
+})(typeof window !== "undefined" ? window : this, (window, Baic, noFrame) => {
   'use strict';
 
   var _AJAX_DEFAULTS = {
     TYPE: 'GET',
     MIME: 'json'
   };
+  
   var _AJAX_MIME_TYPES = {
     script: 'text/javascript, application/javascript',
     json: 'application/json',
@@ -30,165 +47,6 @@ console.time('ajax');;
 
   var JSONP_ID = 0;
   var abortTimeout;
-
-  Baic.extend({
-    AJAX_DEFAULTS: _AJAX_DEFAULTS,
-    AJAX_OPTIONS: _AJAX_OPTIONS,
-    AJAX_MIME_TYPES: _AJAX_MIME_TYPES,
-    ajax(options) {
-      return new Promise((resolve, reject) => {
-        options = Baic.extend({
-          _resolve: resolve,
-          _reject: reject
-        }, Baic.AJAX_OPTIONS, options);
-        var xhr = options.xhr();
-        if (options.data) {
-          if (options.type === Baic.AJAX_DEFAULTS.TYPE) {
-            options.url += Baic.queryString(options.data, options.url.indexOf('?') < 0 ? '?' : '&');
-          } else {
-            options.data = Baic.queryString(options.data);
-          }
-        }
-
-        if (options.url.indexOf("=?") >= 0) {
-          return Baic.jsonp(options);
-        }
-
-        xhr.onreadystatechange = () => {
-          if (xhr.readyState === 4) {
-            abortTimeout && abortTimeout.cancel();
-            _xhrStatus(xhr, options);
-          }
-        }
-
-        xhr.open(options.type, options.url, options.async);
-
-        if (options.contentType) {
-          options.headers['Content-Type'] = options.contentType;
-        }
-        if (options.dataType) {
-          options.headers['Accept'] = Baic.AJAX_MIME_TYPES[options.dataType];
-        }
-
-        for (var key in options.headers) {
-          if (Baic.hasOwn(options.headers, key)) {
-            xhr.setRequestHeader(key, options.headers[key]);
-          }
-        }
-
-        if (options.timeout > 0) {
-          abortTimeout = _xhrTimeout.defer(options.timeout, xhr, options);
-        }
-
-        try {
-          xhr.send(options.data);
-        } catch (error) {
-          _xhrError('Resource not found', (xhr = error), options);
-        }
-      });
-    },
-    jsonp(options) {
-      if (options.async) {
-        var callbackName = "jsonp" + (++JSONP_ID);
-        var script = document.createElement("script");
-        var xhr = {
-          abort() {
-            Baic(script).remove();
-            if (callbackName in window) {
-              delete window[callbackName];
-            }
-          }
-        }
-
-        window[callbackName] = response => {
-          clearTimeout(abortTimeout);
-          xhr.abort();
-          _xhrSuccess(response, xhr, options);
-        };
-        
-        script.src = options.url.replace(/=\?/, '=' + callbackName);
-        Baic('head').append(script);
-        
-        if (options.timeout > 0) {
-          abortTimeout = setTimeout(_xhrTimeout, options.timeout, xhr, options);
-        }
-        
-        return xhr;
-      } else {
-        return console.error('Unable to make jsonp synchronous call.');
-      }
-    },
-    get(url, data, success, dataType) {
-      if (Baic.isFunction(data)) {
-        dataType = success;
-        success = data;
-        data = null;
-      }
-      return Baic.ajax({
-        url: url,
-        data: data,
-        success: success,
-        dataType: dataType
-      });
-    },
-    post(url, data, success, dataType) {
-      if (Baic.isFunction(data)) {
-        dataType = success;
-        success = data;
-        data = null;
-      }
-      return _xhrForm.call(this, 'POST', url, data, success, dataType);
-    },
-    put(url, data, success, dataType) {
-      if (Baic.isFunction(data)) {
-        dataType = success;
-        success = data;
-        data = null;
-      }
-      return _xhrForm.call(this, 'PUT', url, data, success, dataType);
-    },
-    json(url, data, success) {
-      return Baic.ajax({
-        url: url,
-        data: data,
-        success: success,
-        dataType: _AJAX_DEFAULTS.MIME
-      });
-    },
-    delete(url, data, success, dataType) {
-      if (Baic.isFunction(data)) {
-        dataType = success;
-        success = data;
-        data = null;
-      }
-      return _xhrForm.call(this, 'DELETE', url, data, success, dataType);
-    },
-    queryString(obj, prefix) {
-      if (Baic.isJSON(obj)) {
-        prefix = prefix || '';
-        var serialize = prefix;
-        var key;
-        for (key in obj) {
-          if (!Baic.isUndefined(key) && Baic.hasOwn(obj, key)) {
-            if (serialize !== prefix) {
-              serialize += '&'
-            }
-            serialize += key + '=' + encodeURIComponent(obj[key]);
-          }
-        }
-        return (serialize === prefix ? '' : serialize);
-      } else {
-        var query = {};
-        var isUrl = /^(https?\:\/\/|\.\/|\.\.\/)/i.test(obj);
-        var search = location.search.slice(1);
-        (isUrl ? obj.split('?')[1] : search).split('&').forEach(function(item) {
-          var parts = item.split('=');
-          if(parts[0])query[parts[0]] = decodeURIComponent(parts[1]);
-        });
-        return (obj ? (isUrl ? query : query[obj]) : query);
-      }
-    }
-  });
 
   function _xhrForm(method, url, data, success, dataType) {
     return Baic.ajax({
@@ -252,5 +110,175 @@ console.time('ajax');;
     return response;
   }
 
-})();
+  var Ajax = options => {
+    return new Promise((resolve, reject) => {
+      options = Baic.extend({
+        _resolve: resolve,
+        _reject: reject
+      }, Baic.AJAX_OPTIONS, options);
+      var xhr = options.xhr();
+      if (options.data) {
+        if (options.type === Baic.AJAX_DEFAULTS.TYPE) {
+          options.url += Baic.queryString(options.data, options.url.indexOf('?') < 0 ? '?' : '&');
+        } else {
+          options.data = Baic.queryString(options.data);
+        }
+      }
+
+      if (options.url.indexOf("=?") >= 0) {
+        return Baic.jsonp(options);
+      }
+
+      xhr.onreadystatechange = () => {
+        if (xhr.readyState === 4) {
+          abortTimeout && abortTimeout.cancel();
+          _xhrStatus(xhr, options);
+        }
+      }
+
+      xhr.open(options.type, options.url, options.async);
+
+      if (options.contentType) {
+        options.headers['Content-Type'] = options.contentType;
+      }
+      if (options.dataType) {
+        options.headers['Accept'] = Baic.AJAX_MIME_TYPES[options.dataType];
+      }
+
+      for (var key in options.headers) {
+        if (Baic.hasOwn(options.headers, key)) {
+          xhr.setRequestHeader(key, options.headers[key]);
+        }
+      }
+
+      if (options.timeout > 0) {
+        abortTimeout = _xhrTimeout.defer(options.timeout, xhr, options);
+      }
+
+      try {
+        xhr.send(options.data);
+      } catch (error) {
+        _xhrError('Resource not found', (xhr = error), options);
+      }
+    });
+  }
+
+  if (typeof define === "function" && define.amd) {
+    define("Ajax", [], () => {
+      return Ajax;
+    });
+  }
+
+  if (typeof noGlobal === "undefined") {
+    Baic.extend({
+      AJAX_DEFAULTS: _AJAX_DEFAULTS,
+      AJAX_OPTIONS: _AJAX_OPTIONS,
+      AJAX_MIME_TYPES: _AJAX_MIME_TYPES,
+      ajax: Ajax,
+      jsonp(options) {
+        if (options.async) {
+          var callbackName = "jsonp" + (++JSONP_ID);
+          var script = document.createElement("script");
+          var xhr = {
+            abort() {
+              Baic(script).remove();
+              if (callbackName in window) {
+                delete window[callbackName];
+              }
+            }
+          }
+
+          window[callbackName] = response => {
+            clearTimeout(abortTimeout);
+            xhr.abort();
+            _xhrSuccess(response, xhr, options);
+          };
+
+          script.src = options.url.replace(/=\?/, '=' + callbackName);
+          Baic('head').append(script);
+
+          if (options.timeout > 0) {
+            abortTimeout = setTimeout(_xhrTimeout, options.timeout, xhr, options);
+          }
+
+          return xhr;
+        } else {
+          return console.error('Unable to make jsonp synchronous call.');
+        }
+      },
+      get(url, data, success, dataType) {
+        if (Baic.isFunction(data)) {
+          dataType = success;
+          success = data;
+          data = null;
+        }
+        return Baic.ajax({
+          url: url,
+          data: data,
+          success: success,
+          dataType: dataType
+        });
+      },
+      post(url, data, success, dataType) {
+        if (Baic.isFunction(data)) {
+          dataType = success;
+          success = data;
+          data = null;
+        }
+        return _xhrForm.call(this, 'POST', url, data, success, dataType);
+      },
+      put(url, data, success, dataType) {
+        if (Baic.isFunction(data)) {
+          dataType = success;
+          success = data;
+          data = null;
+        }
+        return _xhrForm.call(this, 'PUT', url, data, success, dataType);
+      },
+      json(url, data, success) {
+        return Baic.ajax({
+          url: url,
+          data: data,
+          success: success,
+          dataType: _AJAX_DEFAULTS.MIME
+        });
+      },
+      delete(url, data, success, dataType) {
+        if (Baic.isFunction(data)) {
+          dataType = success;
+          success = data;
+          data = null;
+        }
+        return _xhrForm.call(this, 'DELETE', url, data, success, dataType);
+      },
+      queryString(obj, prefix) {
+        if (Baic.isJSON(obj)) {
+          prefix = prefix || '';
+          var serialize = prefix;
+          var key;
+          for (key in obj) {
+            if (!Baic.isUndefined(key) && Baic.hasOwn(obj, key)) {
+              if (serialize !== prefix) {
+                serialize += '&'
+              }
+              serialize += key + '=' + encodeURIComponent(obj[key]);
+            }
+          }
+          return (serialize === prefix ? '' : serialize);
+        } else {
+          var query = {};
+          var isUrl = /^(https?\:\/\/|\.\/|\.\.\/)/i.test(obj);
+          var search = location.search.slice(1);
+          (isUrl ? obj.split('?')[1] : search).split('&').forEach(function(item) {
+            var parts = item.split('=');
+            if (parts[0]) query[parts[0]] = decodeURIComponent(parts[1]);
+          });
+          return (obj ? (isUrl ? query : query[obj]) : query);
+        }
+      }
+    });
+  }
+
+  return Ajax;
+})
 console.timeEnd('ajax');

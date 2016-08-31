@@ -1,6 +1,23 @@
 console.time('selector');;
-(() => {
+((global, factory) => {
+  if (typeof module === "object" && typeof module.exports === "object") {
+    module.exports = global.Baic ?
+      factory(global, global.Baic) :
+      ((w, frame) => {
+        if (!w.Baic) {
+          throw new Error("selector requires with Baic");
+        }
+        return factory(w, frame);
+      });
+  } else {
+    if (!global.Baic) {
+      throw new Error("selector requires with Baic");
+    }
+    factory(global, global.Baic);
+  }
+})(typeof window !== "undefined" ? window : this, (window, Baic) => {
   'use strict';
+
   var // http://www.w3.org/TR/css3-syntax/#characters
     IS_HTML_FRAGMENT = /^\s*<(\w+|!)[^>]*>/,
     CLASS_SELECTOR = /^\.([\w-]+)$/,
@@ -105,5 +122,12 @@ console.time('selector');;
     return selector ? (dom.parentNode && Baic.selector(dom.parentNode, selector).indexOf(dom) >= 0) : true;
   }
 
-})();
+  if (typeof define === "function" && define.amd) {
+    define("Baic", [], () => {
+      return Baic;
+    });
+  }
+
+  return Baic;
+})
 console.timeEnd('selector');

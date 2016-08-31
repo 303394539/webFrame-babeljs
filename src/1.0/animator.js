@@ -1,25 +1,50 @@
-console.time('animation');;
-(() => {
-  'use strict';
+console.time('animator');;
+((global, factory) => {
+  if (typeof module === "object" && typeof module.exports === "object") {
+    module.exports = global.Baic ?
+      factory(global, global.Baic, true) :
+      ((w, frame) => {
+        if (!w.Baic) {
+          throw new Error("Animator requires with Baic");
+        }
+        return factory(w, frame);
+      });
+  } else {
+    if (!global.Baic) {
+      throw new Error("Animator requires with Baic");
+    }
+    factory(global, global.Baic);
+  }
+})(typeof window !== "undefined" ? window : this, (window, Baic, noFrame) => {
+'use strict';
 
   var _VENDORS = [];
   Baic.VENDORS.forEach(item => {
     _VENDORS.unshift(item.replace(/-/g, ""));
   });
 
-  window.requestAnimationFrame = ((index, fn) => {
+  var Animator = options => {
+    return new _Animator(options);
+  }
+
+  var _requestAnimationFrame = ((index, fn) => {
     while (index-- && !(fn = window[(_VENDORS[index] + "RequestAnimationFrame").firstLowerCase()]));
     return fn || (callback => {
       setTimeout(callback, 15);
     })
   })(_VENDORS.length);
 
-  window.cancelAnimationFrame = ((index, fn) => {
+  var _cancelAnimationFrame = ((index, fn) => {
     while (index-- &&
       !(fn = window[(_VENDORS[index] + "CancelAnimationFrame").firstLowerCase()] ||
         window[(_VENDORS[index] + "CancelRequestAnimationFrame").firstLowerCase()]));
     return fn || clearTimeout;
-  })(_VENDORS.length);
+  })(_VENDORS.length)
+
+  Baic.extend(window, {
+    requestAnimationFrame: _requestAnimationFrame,
+    cancelAnimationFrame: _cancelAnimationFrame
+  })
 
   Baic.extend({
     easing: {
@@ -54,9 +79,6 @@ console.time('animation');;
         }
         return -1 * ((--n) * (n - 2) - 1) / 2;
       }
-    },
-    Animator(options) {
-      return new _Animator(options);
     }
   });
 
@@ -79,7 +101,7 @@ console.time('animation');;
       this.starttime = this.frametime = Date.now();
       this.value = this.startValue;
 
-      this._Animation = window.requestAnimationFrame(_next.bind(this));
+      this._Animation = _requestAnimationFrame(_next.bind(this));
     },
     stop() {
       _cancel(this);
@@ -88,7 +110,7 @@ console.time('animation');;
   });
 
   function _cancel(obj) {
-    window.cancelAnimationFrame(obj._Animation);
+    _cancelAnimationFrame(obj._Animation);
     obj._Animation = null;
   }
 
@@ -103,7 +125,7 @@ console.time('animation');;
       this.onStep();
       this.onEnd();
     } else {
-      this._Animation = window.requestAnimationFrame(_next.bind(this));
+      this._Animation = _requestAnimationFrame(_next.bind(this));
       this.value = this.startValue + num * (this.endValue - this.startValue);
       this.onStep();
     }
@@ -118,5 +140,16 @@ console.time('animation');;
     }
   }
 
-})();
-console.timeEnd('animation');
+  if (typeof define === "function" && define.amd) {
+    define("Animator", [], () => {
+      return Animator;
+    });
+  }
+
+  if (typeof noFrame === "undefined") {
+    Baic.Animator = Animator;
+  }
+
+  return Animator;
+})
+console.timeEnd('animator');

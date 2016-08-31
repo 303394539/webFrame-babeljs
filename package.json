@@ -30,6 +30,7 @@
     "babel-plugin-async-to-promises": "*"
   },
   "babel": {
+    "compact": false,
     "presets": ["es2015"],
     "plugins": [
       "async-to-promises", 

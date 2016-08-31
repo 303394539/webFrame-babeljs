@@ -1,8 +1,24 @@
 console.time('event');;
-(() => {
-  'use strict';
+((global, factory) => {
+  if (typeof module === "object" && typeof module.exports === "object") {
+    module.exports = global.Baic ?
+      factory(global, global.Baic) :
+      ((w, frame) => {
+        if (!w.Baic) {
+          throw new Error("event requires with Baic");
+        }
+        return factory(w, frame);
+      });
+  } else {
+    if (!global.Baic) {
+      throw new Error("event requires with Baic");
+    }
+    factory(global, global.Baic);
+  }
+})(typeof window !== "undefined" ? window : this, (window, Baic) => {
+'use strict';
 
-  var EVENTS_PC = {
+  var _EVENTS_PC = {
     touchstart: 'mousedown',
     touchmove: 'mousemove',
     touchend: 'mouseup',
@@ -10,7 +26,7 @@ console.time('event');;
     doubletap: 'dblclick',
     orientationchange: 'resize'
   };
-  var HANDLERS = {};
+  var _HANDLERS = {};
 
   Baic.extend({
     createEvent(type, options) {
@@ -47,7 +63,7 @@ console.time('event');;
       var event = _getEventName(eventName);
       this.forEach(item => {
         var id = Baic.id(item);
-        var elementHandlers = HANDLERS[id] || (HANDLERS[id] = []);
+        var elementHandlers = _HANDLERS[id] || (_HANDLERS[id] = []);
         var handler = {
           event: event,
           callback: callback,
@@ -64,9 +80,9 @@ console.time('event');;
       var event = _getEventName(eventName);
       this.forEach(item => {
         var id = Baic.id(item);
-        (HANDLERS[id] || []).forEach(handler => {
+        (_HANDLERS[id] || []).forEach(handler => {
           if (handler && (!event || handler.event === event) && (!callback || handler.callback === callback)) {
-            delete HANDLERS[id][handler.index];
+            delete _HANDLERS[id][handler.index];
             Baic.removeEventListener(item, handler.event, handler.proxy, bool);
           }
         });
@@ -89,7 +105,7 @@ console.time('event');;
 
   function _getEventName(eventName) {
     eventName = eventName.toLowerCase();
-    return (Baic.browser.mobile ? eventName : EVENTS_PC[eventName]) || eventName;
+    return (Baic.browser.mobile ? eventName : _EVENTS_PC[eventName]) || eventName;
   }
 
   function _createProxyCallback(callback, element) {
@@ -104,5 +120,12 @@ console.time('event');;
     })
   }
 
-})();
+  if (typeof define === "function" && define.amd) {
+    define("Baic", [], () => {
+      return Baic;
+    });
+  }
+
+  return Baic;
+})
 console.timeEnd('event');

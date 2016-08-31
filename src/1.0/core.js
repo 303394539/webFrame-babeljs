@@ -1,4 +1,3 @@
-'use strict';
 console.time('core');;
 (((global, factory) => {
 
@@ -16,6 +15,7 @@ console.time('core');;
 	}
 
 })(typeof window !== "undefined" ? window : this, (window, noGlobal) => {
+'use strict';
 
 	var document = window.document,
 		OBJECT_PROTOTYPE = Object.prototype,
@@ -230,7 +230,16 @@ console.time('core');;
 				return a + e * c | 0
 			})(min || 9999999) : rand;
 			return rand;
-		}
+		},
+		VENDORS: (() => {
+      var styles = document.defaultView.getComputedStyle(document.documentElement, "") || window.getComputedStyle(document.documentElement, "") || "";
+      if (!styles) return ['-webkit-', '-moz-', '-ms-', '-o-', ''];
+      var vendors = Array.prototype.slice
+        .call(styles)
+        .join('')
+        .match(/-(moz|webkit|ms|o)-/);
+      return Array.isArray(vendors) ? [""].concat(vendors[0]) : (styles.OLink === '' && ['', 'o']);
+    })()
 	});
 
 	function _checktype(type) {
@@ -430,11 +439,7 @@ console.time('core');;
 	}
 
 	if (typeof noGlobal === "undefined") {
-		window.Baic = window.b = Baic;
-	}
-
-	if (typeof $ === "undefined") {
-		window.$ = Baic;
+		(window.Baic = window.b = Baic) && ("$" in window || (window.$ = Baic));
 	}
 
 	return Baic;

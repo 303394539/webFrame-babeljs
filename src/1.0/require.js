@@ -1,6 +1,23 @@
 console.time('require');;
-((window, document) => {
+((global, factory) => {
+  if (typeof module === "object" && typeof module.exports === "object") {
+    module.exports = global.Baic ?
+      factory(global, global.Baic, true) :
+      ((w, frame) => {
+        if (!w.Baic) {
+          throw new Error("require requires with Baic");
+        }
+        return factory(w, frame);
+      });
+  } else {
+    if (!global.Baic) {
+      throw new Error("require requires with Baic");
+    }
+    factory(global, global.Baic);
+  }
+})(typeof window !== "undefined" ? window : this, (window, Baic, noFrame) => {
   'use strict';
+
   var EXP_READY = /complete|loaded|interactive/,
     EXP_HTTP = /((^http)|(^https)):\/\/(\w)+.(\w)+/i,
     EXP_EXT = /(?:\.js|\.css|\.jpg|\.jpeg|\.png|\.gif)$/i,
@@ -112,7 +129,7 @@ console.time('require');;
     return Promise.resolve(complete)
   }
 
-  var require = function(){
+  var Require = function(){
     var args = Array.prototype.slice.call(arguments);
     if(args.length > 0 && Array.isArray(args[0])){
       args = args[0];
@@ -167,9 +184,18 @@ console.time('require');;
       break;
     }
   };
-  require.baseUrl = baseUrl;
+  Require.baseUrl = baseUrl;
 
-  window.require = require;
+  if (typeof define === "function" && define.amd) {
+    define("Require", [], () => {
+      return Require;
+    });
+  }
 
-})(window, document)
+  if (typeof noFrame === "undefined") {
+    window.require = Baic.require = Require;
+  }
+
+  return Require;
+})
 console.timeEnd('require');

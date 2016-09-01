@@ -16,7 +16,7 @@ console.time('browser');;
     factory(global, global.Baic);
   }
 })(typeof window !== "undefined" ? window : this, (window, Baic, noFrame) => {
-'use strict';
+  'use strict';
 
   var _userAgent = window.navigator.userAgent.toLowerCase(),
     _msPointerEnabled = !!window.navigator.msPointerEnabled,

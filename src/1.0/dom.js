@@ -16,7 +16,7 @@ console.time('dom');;
     factory(global, global.Baic);
   }
 })(typeof window !== "undefined" ? window : this, (window, Baic) => {
-'use strict';
+  'use strict';
 
   var EVENT_PREFIX = /^on[A-Z]/,
     ELEMENT_ID = 1;

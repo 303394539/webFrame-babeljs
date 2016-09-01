@@ -92,10 +92,10 @@ console.time('task');;
   var _asyncArgs = {};
 
   Baic.extend(_Task.prototype, {
-    scope(fn){
-      if(this.__asap__){
+    scope(fn) {
+      if (this.__asap__) {
         asap(fn)
-      }else{
+      } else {
         fn();
       }
     }
@@ -129,7 +129,7 @@ console.time('task');;
     run: _run,
     runQueue: _runQueue,
     runAsync: _runAsync,
-    clean(){
+    clean() {
       asap(() => {
         _index = 0;
         _queue = {};
@@ -138,23 +138,23 @@ console.time('task');;
         _asyncArgs = {};
       })
     },
-    inject(){
+    inject() {
       var args = arguments.toArray();
       var scope = args[0];
-      if(!scope){
+      if (!scope) {
         return {}
       }
-      if(scope.__async__){
+      if (scope.__async__) {
         asap(() => {
           _asyncArgs[scope.__taskindex__] = args;
         })
-      }else{
+      } else {
         _queueArgs[scope.__taskindex__] = args;
       }
       return scope
     },
-    expose(){
-      if(DEBUG){
+    expose() {
+      if (DEBUG) {
         console.group('task.js');
         console.log('_index:', _index);
         console.log('_queue:', _queue);
@@ -164,15 +164,15 @@ console.time('task');;
         console.groupEnd();
       }
     },
-    asyncExpose(){
-      if(DEBUG){
+    asyncExpose() {
+      if (DEBUG) {
         asap(_Task.expose)
       }
     }
   })
 
   Baic.extend(Function.prototype, {
-    queue(){
+    queue() {
       var args = arguments.toArray()
       args.unshift(this)
       _queue[_index] = this
@@ -182,7 +182,7 @@ console.time('task');;
       _index++;
       return this
     },
-    async(){
+    async() {
       var args = arguments.toArray()
       args.unshift(this)
       _async[_index] = this
@@ -192,7 +192,7 @@ console.time('task');;
       _index++;
       return this
     },
-    inject(){
+    inject() {
       return _Task.inject.apply(this, [this].concat(arguments.toArray()))
     }
   })
@@ -202,7 +202,7 @@ console.time('task');;
     runAsyncTask: _runAsync,
     runQueueTask: _runQueue,
     runTask: _run,
-    cleanTask(){
+    cleanTask() {
       _Task.clean();
     }
   })

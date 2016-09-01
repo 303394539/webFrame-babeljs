@@ -26,11 +26,11 @@ console.time('require');;
     EXP_JS = /\.js$/i;
 
   var scripts = document.getElementsByTagName("script"),
-      script,main,
-      head = document.head || document.getElementsByTagName("head")[0] || document.documentElement,
-      len = scripts.length,
-      isReady = EXP_READY.test(document.readyState),
-      baseUrl = _getScriptAbsPath();
+    script, main,
+    head = document.head || document.getElementsByTagName("head")[0] || document.documentElement,
+    len = scripts.length,
+    isReady = EXP_READY.test(document.readyState),
+    baseUrl = _getScriptAbsPath();
 
   function _getScriptAbsPath() {
     var url = "";
@@ -52,25 +52,27 @@ console.time('require');;
     return url;
   }
 
-  function _createJs(url){
+  function _createJs(url) {
     var node = document.createElement("script");
     node.src = url;
-    return new Promise((resolve, reject) =>{
-      function _onload(event){
-        if(event.type === "load" || EXP_READY.test(node.readyState)){
+    return new Promise((resolve, reject) => {
+      function _onload(event) {
+        if (event.type === "load" || EXP_READY.test(node.readyState)) {
           _removeListener();
           resolve(node)
         }
       }
-      function _error(){
+
+      function _error() {
         _removeListener();
         reject(url)
       }
-      function _removeListener(){
-        if(node.removeEventListener){
+
+      function _removeListener() {
+        if (node.removeEventListener) {
           node.removeEventListener("load", _onload, false);
           node.removeEventListener("error", _error, false)
-        }else{
+        } else {
           node.detachEvent('onreadystatechange', _onload)
         }
       }
@@ -84,7 +86,7 @@ console.time('require');;
     })
   }
 
-  function _createCss(url){
+  function _createCss(url) {
     var node = document.createElement("link");
     node.rel = "stylesheet";
     node.href = url;
@@ -92,12 +94,12 @@ console.time('require');;
     return Promise.resolve(node);
   }
 
-  function _createImage(url){
+  function _createImage(url) {
     var image = new Image();
     image.src = url;
-    if(image.complete){
+    if (image.complete) {
       return Promise.resolve(image);
-    }else{
+    } else {
       return new Promise((resolve, reject) => {
         image.onload = () => {
           resolve(image)
@@ -109,29 +111,29 @@ console.time('require');;
     }
   }
 
-  function _load(url){
+  function _load(url) {
     var complete = _getUrl(url);
     var index = complete.indexOf("?");
-    if(index >= 0){
+    if (index >= 0) {
       url = complete.substring(0, index);
-    }else{
+    } else {
       url = complete;
     }
-    if(EXP_JS.test(url)){
+    if (EXP_JS.test(url)) {
       return _createJs(complete);
     }
-    if(EXP_CSS.test(url)){
+    if (EXP_CSS.test(url)) {
       return _createCss(complete)
     }
-    if(EXP_IMAGE.test(url)){
+    if (EXP_IMAGE.test(url)) {
       return _createImage(complete)
     }
     return Promise.resolve(complete)
   }
 
-  var Require = function(){
+  var Require = function() {
     var args = Array.prototype.slice.call(arguments);
-    if(args.length > 0 && Array.isArray(args[0])){
+    if (args.length > 0 && Array.isArray(args[0])) {
       args = args[0];
     }
     return new Promise(resolve => {
@@ -146,7 +148,7 @@ console.time('require');;
         isReady = true;
         resolve();
       }
-      if(!isReady){
+      if (!isReady) {
         if (document.addEventListener) {
           document.addEventListener('DOMContentLoaded', _DOMLoaded, false);
           window.addEventListener('load', _DOMLoaded, false);
@@ -154,7 +156,7 @@ console.time('require');;
           document.attachEvent('onreadystatechange', _DOMLoaded);
           window.attachEvent('onload', _DOMLoaded);
         }
-      }else{
+      } else {
         setTimeout(_DOMLoaded, 100)
       }
     }).then(() => {
@@ -170,11 +172,11 @@ console.time('require');;
     baseUrl = script.getAttribute("data-base-url") || baseUrl;
     if (script.hasAttribute("data-require")) {
       main = script.getAttribute("data-require");
-      if(main){
+      if (main) {
         main.split(';').forEach(item => {
-          if(item.indexOf(",") < 0){
+          if (item.indexOf(",") < 0) {
             require(item)
-          }else{
+          } else {
             item.split(',').forEach(item => {
               require(item)
             })
@@ -184,7 +186,9 @@ console.time('require');;
       break;
     }
   };
-  Require.baseUrl = baseUrl;
+  Baic.extend(Require, {
+    baseUrl: baseUrl
+  })
 
   if (typeof define === "function" && define.amd) {
     define("Require", [], () => {

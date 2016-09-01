@@ -16,7 +16,7 @@ console.time('event');;
     factory(global, global.Baic);
   }
 })(typeof window !== "undefined" ? window : this, (window, Baic) => {
-'use strict';
+  'use strict';
 
   var _EVENTS_PC = {
     touchstart: 'mousedown',
@@ -109,8 +109,7 @@ console.time('event');;
   }
 
   function _createProxyCallback(callback, element) {
-    return (event => {
-      event = event || window.event;
+    return ((event = window.event) => {
       if (event && !event.target) {
         event.target = event.srcElement;
       }

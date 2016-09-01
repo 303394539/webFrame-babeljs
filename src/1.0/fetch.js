@@ -16,7 +16,7 @@ console.time('fetch');;
     factory(global, global.Baic);
   }
 })(typeof window !== "undefined" ? window : this, (window, Baic, noFrame) => {
-'use strict';
+  'use strict';
 
   function _normalizeName(name) {
     if (typeof name !== 'string') {
@@ -212,8 +212,7 @@ console.time('fetch');;
     return (methods.indexOf(upcased) > -1) ? upcased : method
   }
 
-  function Request(input, options) {
-    options = options || {}
+  function Request(input, options = {}) {
     var body = options.body
     if (Request.prototype.isPrototypeOf(input)) {
       if (input.bodyUsed) {
@@ -281,11 +280,7 @@ console.time('fetch');;
 
   Body.call(Request.prototype)
 
-  function Response(bodyInit, options) {
-    if (!options) {
-      options = {}
-    }
-
+  function Response(bodyInit, options = {}) {
     this._initBody(bodyInit)
     this.type = 'default'
     this.status = options.status

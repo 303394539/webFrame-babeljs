@@ -22,7 +22,7 @@ console.time('ajax');;
     TYPE: 'GET',
     MIME: 'json'
   };
-  
+
   var _AJAX_MIME_TYPES = {
     script: 'text/javascript, application/javascript',
     json: 'application/json',
@@ -119,9 +119,9 @@ console.time('ajax');;
       var xhr = options.xhr();
       if (options.data) {
         if (options.type === Baic.AJAX_DEFAULTS.TYPE) {
-          options.url += Baic.queryString(options.data, options.url.indexOf('?') < 0 ? '?' : '&');
+          options.url += Baic.url.query(options.data, options.url.indexOf('?') < 0 ? '?' : '&');
         } else {
-          options.data = Baic.queryString(options.data);
+          options.data = Baic.url.query(options.data);
         }
       }
 
@@ -250,31 +250,6 @@ console.time('ajax');;
           data = null;
         }
         return _xhrForm.call(this, 'DELETE', url, data, success, dataType);
-      },
-      queryString(obj, prefix) {
-        if (Baic.isJSON(obj)) {
-          prefix = prefix || '';
-          var serialize = prefix;
-          var key;
-          for (key in obj) {
-            if (!Baic.isUndefined(key) && Baic.hasOwn(obj, key)) {
-              if (serialize !== prefix) {
-                serialize += '&'
-              }
-              serialize += key + '=' + encodeURIComponent(obj[key]);
-            }
-          }
-          return (serialize === prefix ? '' : serialize);
-        } else {
-          var query = {};
-          var isUrl = /^(https?\:\/\/|\.\/|\.\.\/)/i.test(obj);
-          var search = location.search.slice(1);
-          (isUrl ? obj.split('?')[1] : search).split('&').forEach(function(item) {
-            var parts = item.split('=');
-            if (parts[0]) query[parts[0]] = decodeURIComponent(parts[1]);
-          });
-          return (obj ? (isUrl ? query : query[obj]) : query);
-        }
       }
     });
   }

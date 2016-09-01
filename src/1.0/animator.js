@@ -16,7 +16,7 @@ console.time('animator');;
     factory(global, global.Baic);
   }
 })(typeof window !== "undefined" ? window : this, (window, Baic, noFrame) => {
-'use strict';
+  'use strict';
 
   var _VENDORS = [];
   Baic.VENDORS.forEach(item => {

@@ -8,7 +8,7 @@ var uglifyJS = require('uglify-js');
 var args = process.argv.splice(2);
 var options = JSON.parse(fs.readFileSync('package.json'));
 var versions = args[0];
-var sorts = ["core.js"];
+var sorts = ["core.js", "selector.js", "dom.js"];
 
 if (!versions) {
   return console.error("versions is undefined")

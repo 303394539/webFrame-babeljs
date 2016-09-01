@@ -15,7 +15,7 @@ console.time('core');;
 	}
 
 })(typeof window !== "undefined" ? window : this, (window, noGlobal) => {
-'use strict';
+	'use strict';
 
 	var document = window.document,
 		OBJECT_PROTOTYPE = Object.prototype,
@@ -232,14 +232,14 @@ console.time('core');;
 			return rand;
 		},
 		VENDORS: (() => {
-      var styles = document.defaultView.getComputedStyle(document.documentElement, "") || window.getComputedStyle(document.documentElement, "") || "";
-      if (!styles) return ['-webkit-', '-moz-', '-ms-', '-o-', ''];
-      var vendors = Array.prototype.slice
-        .call(styles)
-        .join('')
-        .match(/-(moz|webkit|ms|o)-/);
-      return Array.isArray(vendors) ? [""].concat(vendors[0]) : (styles.OLink === '' && ['', 'o']);
-    })()
+			var styles = document.defaultView.getComputedStyle(document.documentElement, "") || window.getComputedStyle(document.documentElement, "") || "";
+			if (!styles) return ['-webkit-', '-moz-', '-ms-', '-o-', ''];
+			var vendors = Array.prototype.slice
+				.call(styles)
+				.join('')
+				.match(/-(moz|webkit|ms|o)-/);
+			return Array.isArray(vendors) ? [""].concat(vendors[0]) : (styles.OLink === '' && ['', 'o']);
+		})()
 	});
 
 	function _checktype(type) {
@@ -262,7 +262,7 @@ console.time('core');;
 		bind(scope) {
 			var method = this;
 			var args = arguments.toArray(1);
-			return () => {
+			return function () {
 				return method.apply(scope, args.concat(arguments.toArray()));
 			};
 		},
@@ -272,8 +272,7 @@ console.time('core');;
 		cycle() {
 			return this._cycle = setInterval.apply(null, [this].concat(arguments.toArray()));
 		},
-		cancel(type) {
-			type = type || 1;
+		cancel(type = 1) {
 			if (this._job && type === 1) {
 				clearTimeout(this._job);
 			} else if (this._cycle && type === 2) {

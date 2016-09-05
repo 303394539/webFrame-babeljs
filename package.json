@@ -35,7 +35,7 @@
     "plugins": [
       "async-to-promises", 
       ["transform-react-jsx", {
-        "pragma": "b.jsx"
+        "pragma": "Baic.jsx"
       }]
     ]
   }

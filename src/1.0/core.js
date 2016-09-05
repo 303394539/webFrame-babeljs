@@ -129,7 +129,7 @@ console.time('core');;
 				return ARRAY_PROTOTYPE.map.apply(this, arguments);
 			} else {
 				var result = {};
-				this.forEach(function(value, key, object) {
+				this.forEach((value, key, object) => {
 					result[key] = fn.call(scope, value, key, object);
 				});
 				return result;

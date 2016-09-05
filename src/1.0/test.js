@@ -1,19 +1,13 @@
-class ee {
-	constructor(){
-		alert(123)
-	}
-	has(obj) {
-    return 123;
-  }
-}
-new ee();
+var Img = 'img';
 var test= {
 	async asd(){
-		new Promise();
-		fetch(`http://www.baidu.com`);
-		document.body.append(<div></div>)
+		new Promise(function(){});
+		// fetch(`http://www.baidu.com`);
+		var a = <div v-link={location.href} class={location.origin}>{`${location.href}`}<img src={location.pathname}/>{location.pathname}</div>;
 		setTimeout(()=>{}, 100);
-		await alert(123)
-		var a = Object.extent({})
+		var b = Object.extends({})
+		console.log(a)
+		Baic(document.body).append(a)
 	}
 };
+test.asd();

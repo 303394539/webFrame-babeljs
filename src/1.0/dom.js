@@ -235,32 +235,12 @@ console.time('dom');;
     }
   });
 
-  Baic.extend({
-    createElements: _createElements,
-    b: _createElements,
-    createElementPrepend(obj, parentNode) {
-      if (!obj || !parentNode) return null;
-      return Baic(parentNode).createElementPrepend(obj);
-    },
-    id(element, index) {
-      if (element && element.nodeType) {
-        return element.id || (element.id = Baic.id());
-      } else if (Baic.isArray(element)) {
-        return (Baic.isNumber(index) && index < this.length) ? (this[0].id = Baic.id()) : this.map(item => {
-          return item.id || (item.id = Baic.id());
-        });
-      } else {
-        return '__id_' + ELEMENT_ID++;
-      }
-    }
-  });
-
   function _hasClass(dom, name) {
     return dom.classList ? dom.classList.contains(name) : dom.className.split(/\s+/g).indexOf(name) >= 0;
   }
 
   function _addElement(mode) {
-    return value => {
+    return function(value) {
       var method = (item, value) => {
         switch (mode) {
           case 0:
@@ -303,7 +283,18 @@ console.time('dom');;
       }).join(';');
     };
 
-    if (type === 'object') {
+    var processB = q => {
+      if (parentNode) {
+        Baic(parentNode).append(q)
+      }
+      return q;
+    }
+
+    if (elements.isB) {
+      return processB(elements);
+    }
+
+    if (type == 'object' || type == 'string') {
       elements = [elements];
     } else if (type !== 'array') {
       return nodes;
@@ -311,78 +302,121 @@ console.time('dom');;
 
     elements.forEach(properties => {
       if (properties) {
-        var element = document.createElement(properties.tag || 'div');
-        var styles = [];
-        var property, value;
-        for (property in properties)
-          if (Baic.hasOwn(properties, property)) {
-            value = properties[property];
-            switch (property) {
-              case 'tag':
-              case 'components':
-                break;
-
-              case 'style':
-                styles.push(value);
-                break;
-
-              case 'flex':
-                styles.push(vendor('box-flex', value));
-                break;
-
-              case 'text':
-                element.textContent = value;
-                break;
-
-              case 'html':
-                element.innerHTML = value;
-                break;
-
-              case 'classes':
-                element.className = value;
-                break;
-
-              case 'showing':
-                styles.push('display:' + (value ? 'block' : 'none'));
-                break;
-
-              case 'width':
-              case 'height':
-              case 'top':
-              case 'bottom':
-              case 'left':
-              case 'right':
-                styles.push(property + ':' +
-                  (Baic.isString(value) ? value : (+value + 'px')));
-                break;
-
-              default:
-                if (EVENT_PREFIX.test(property) && Baic.isFunction(value)) {
-                  Baic(element).on(property[2].toLowerCase() + property.slice(3),
-                    value);
-                } else if (value != null) {
-                  element.setAttribute(property.replace(/[A-Z]/g, obj => {
-                    return '-' + obj.toLowerCase();
-                  }), value.toStr());
-                }
-            }
-          }
-
-        if (properties.components) {
-          _createElements(properties.components, element);
+        if (properties.isB) {
+          return processB(properties)
         }
 
-        if (styles.length) {
-          element.style.cssText = styles.join(';');
+        var element
+        if (Baic.isString(properties)) {
+          element = document.createTextNode(properties)
+        } else {
+          element = document.createElement(properties.tag || 'div');
+          var styles = [];
+          var property, value;
+          for (property in properties)
+            if (Baic.hasOwn(properties, property)) {
+              value = properties[property];
+              switch (property) {
+                case 'tag':
+                case 'components':
+                  // ignore properties
+                  break;
+
+                case 'style':
+                  styles.push(value);
+                  break;
+
+                case 'flex':
+                  styles.push(vendor('box-flex', value));
+                  break;
+
+                case 'text':
+                  element.textContent = value;
+                  break;
+
+                case 'html':
+                  element.innerHTML = value;
+                  break;
+
+                case 'classes':
+                case 'className':
+                  element.className = value;
+                  break;
+
+                case 'showing':
+                  styles.push('display:' + (value ? 'block' : 'none'));
+                  break;
+
+                case 'width':
+                case 'height':
+                case 'top':
+                case 'bottom':
+                case 'left':
+                case 'right':
+                  styles.push(property + ':' +
+                    (Baic.isString(value) ? value : (+value + 'px')));
+                  break;
+
+                default:
+                  if (EVENT_PREFIX.test(property) && Baic.isFunction(value)) {
+                    Baic(element).on(property[2].toLowerCase() + property.slice(3),
+                      value);
+                  } else if (value != null) {
+                    element.setAttribute(property.replace(/[A-Z]/g, obj => {
+                      return '-' + obj.toLowerCase();
+                    }), value.toStr());
+                  }
+              }
+            }
+
+          if (properties.components) {
+            _createElements(properties.components, element);
+          }
+
+          if (styles.length) {
+            element.style.cssText = styles.join(';');
+          }
+        }
+
+        if (parentNode) {
+          parentNode.appendChild(element);
         }
 
         nodes.push(element);
       }
-
     });
 
     return nodes;
   }
+
+  function _createBaicElements(elements, parentNode) {
+    if (Baic.isString(parentNode)) {
+      parentNode = Baic(parentNode)[0];
+    } else if (Baic.isArray(parentNode)) {
+      parentNode = parentNode[0];
+    }
+    return Baic(_createElements(elements));
+  }
+
+  Baic.extend({
+    createElements: _createBaicElements,
+    $: _createBaicElements,
+    createElementPrepend(obj, parentNode) {
+      if (!obj || !parentNode) return null;
+      return (parentNode.isB ? parentNode : Baic(parentNode)).createElementPrepend(obj);
+    },
+    id(element, index) {
+      if (element && element.nodeType) {
+        return element.id || (element.id = Baic.id());
+      } else if (Baic.isArray(element)) {
+        return (Baic.isNumber(index) && index < this.length) ? (this[0].id = Baic.id()) : this.map(item => {
+          return item.id || (item.id = Baic.id());
+        });
+      } else {
+        return '__id_' + ELEMENT_ID++;
+      }
+    }
+  });
 
   if (typeof define === "function" && define.amd) {
     define("Baic", [], () => {

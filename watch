@@ -8,7 +8,7 @@ var uglifyJS = require('uglify-js');
 var args = process.argv.splice(2);
 var options = JSON.parse(fs.readFileSync('package.json'));
 var versions = args[0];
-var sorts = ["core.js", "selector.js", "dom.js"];
+var sorts = ["core.js", "selector.js", "dom.js", "jsx.js"];
 
 if (!versions) {
   return console.error("versions is undefined")
@@ -19,7 +19,7 @@ function createCodeFile() {
     if (err) throw err;
     var arr, dir, target, targets = {};
     files.forEach(function(item) {
-      if (item.endsWith(".js") && !item.endsWith("test.js")) {
+      if (item.endsWith(".js") && !item.endsWith("test.js1")) {
         arr = item.split("/");
         dir = arr[arr.length - 2];
         targetList = targets[dir];

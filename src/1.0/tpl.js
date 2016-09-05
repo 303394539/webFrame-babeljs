@@ -26,6 +26,7 @@ console.time('tpl');;
         self.tplMap[dom.attr("name")] = dom.html().replace(/>\s+</g, '><').trim();
         dom.remove()
       })
+      self.context = context;
       context.children().forEach(_process.bind(self))
     }
     on(fnName, fn) {
@@ -36,6 +37,9 @@ console.time('tpl');;
       }
     }
     get(name, obj){
+      if(Baic.isUndefined(name)){
+        return this.tplMap;
+      }
       var html = name;
       if (name in this.tplMap && Baic.hasOwn(this.tplMap, name)) {
         html = this.tplMap[name] || "";
@@ -47,10 +51,7 @@ console.time('tpl');;
     }
     dom(name, obj) {
       var html = this.get(name, obj)
-      html = html.replace(FIRST_EXP, "")
-      var dom = Baic(html);
-      dom.forEach(_process.bind(this))
-      return dom;
+      return _parseTplDom(html, obj);
     }
   }
 
@@ -76,11 +77,6 @@ console.time('tpl');;
     return string;
   }
 
-  Baic.extend(Tpl.prototype, {
-    tplEventContainer: {},
-    tplMap: {}
-  })
-
   function _process(el) {
     var tpl = this;
     el = Baic(el);
@@ -101,7 +97,7 @@ console.time('tpl');;
           })
           var name = args.shift()
           if (tpl.tplEventContainer[name]) {
-            tpl.tplEventContainer[name].apply(window, [event].concat(args))
+            tpl.tplEventContainer[name].apply(tpl.context || window, [event].concat(args))
           }
         } else {
           if(!replace){
@@ -115,6 +111,21 @@ console.time('tpl');;
     el.children().forEach(_process.bind(tpl))
   }
 
+  function _parseTplDom(html = "", obj = {}){
+    html = html.replace(FIRST_EXP, "")
+    var dom = Baic(html);
+    dom.forEach(_process.bind(this))
+    return dom;
+  }
+
+  Baic.extend(Tpl.prototype, {
+    context: null,
+    tplEventContainer: {},
+    tplMap: {},
+    parseTpl: _parseTpl,
+    parseTplDom: _parseTplDom
+  })
+
   if (typeof define === "function" && define.amd) {
     define("Tpl", [], () => {
       return Tpl;
@@ -122,10 +133,7 @@ console.time('tpl');;
   }
 
   if (typeof noFrame === "undefined") {
-    Baic.extend({
-      tpl: new Tpl(),
-      parseTpl: _parseTpl
-    })
+    Baic.tpl = new Tpl();
   }
 
   return Tpl;

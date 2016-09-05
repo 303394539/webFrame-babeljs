@@ -133,7 +133,7 @@ console.time('require');;
 
   var Require = function() {
     var args = Array.prototype.slice.call(arguments);
-    if (args.length > 0 && Array.isArray(args[0])) {
+    if (args.length > 0 && Baic.isArray(args[0])) {
       args = args[0];
     }
     return new Promise(resolve => {

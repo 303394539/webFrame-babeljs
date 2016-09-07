@@ -22,7 +22,7 @@ console.time('jsx');;
     process() {
       var eventName = this.attr('v-link-event');
       var link = this.attr("v-link");
-      var replace = /^(?:yes|1|on|true)$/i.test(this.attr("v-link-replace"));
+      var replace = (this.attr("v-link-replace") || "").boolean();
       this.removeAttr("v-link")
       this.removeAttr("v-link-replace")
       this.removeAttr("v-link-event")
@@ -70,7 +70,7 @@ console.time('jsx');;
         properties.components = children.filter(function(value) {
           return value != null && value !== false && value !== ''
         }).map(function(value) {
-          return value.isB ? value : Baic.$('' + value).process();
+          return value.isB ? value : Baic.$('' + value);
         })
       }
       return Baic.$(properties).process();

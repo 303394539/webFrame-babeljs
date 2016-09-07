@@ -22,7 +22,7 @@ console.time('jsx');;
     process() {
       var eventName = this.attr('v-link-event');
       var link = this.attr("v-link");
-      var replace = (this.attr("v-link-replace") || "").boolean();
+      var replace = (this.attr("v-link-replace") || "").toBoolean();
       this.removeAttr("v-link")
       this.removeAttr("v-link-replace")
       this.removeAttr("v-link-event")

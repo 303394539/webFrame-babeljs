@@ -298,7 +298,7 @@ console.time('core');;
 		trim() {
 			return this.replace(/^[\s\uFEFF\xA0]+|[\s\uFEFF\xA0]+$/g, "");
 		},
-		boolean() {
+		toBoolean() {
 			return /^(?:yes|1|on|true)$/i.test(this);
 		}
 	});

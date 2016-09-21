@@ -49,7 +49,6 @@ console.time('core');;
 
 	Baic.fn = B.prototype = {
 		isB: true,
-		version: "1.0.0",
 		constructor: Baic,
 		selector: "",
 		length: 0,
@@ -206,20 +205,38 @@ console.time('core');;
 			return true;
 		},
 		isJSON(obj) {
-			return Baic.isObject(obj) && !obj.length;
+			return Baic.isObject(obj) || Baic.isArray(obj);
+		},
+		isJSONString(obj) {
+			return Baic.isString(obj) && /^\{.*?\}$|^\[.*?\]$/.test(obj.trim()) && !!(() => {
+				try {
+					return JSON.parse(obj)
+				} catch (e) {}
+			})();
 		},
 		parseJSON(obj) {
-			return JSON.parse(obj + "");
+			try {
+				return JSON.parse(obj + "");
+			} catch (e) {
+				return {};
+			}
 		},
 		getWindow(obj) {
 			return Baic.isWindow(obj) ? obj : obj.nodeType === 9 && obj.defaultView;
 		},
 		ready(callback) {
-			if (!Baic.isFunction(callback)) return;
-			if (/complete|loaded|interactive/.test(document.readyState) && document.body) callback(Baic);
-			else document.addEventListener('DOMContentLoaded', () => {
-				callback(Baic)
-			}, false);
+			return new Promise(resolve => {
+				if (/complete|loaded|interactive/.test(document.readyState) && document.body) {
+					resolve();
+				} else {
+					document.addEventListener('DOMContentLoaded', () => resolve())
+				}
+			}).then(() => {
+				if (Baic.isFunction(callback)) {
+					callback(Baic);
+				}
+				return Promise.resolve();
+			})
 		},
 		random(min, max) {
 			var rand = Math.floor(min + Math.random() * (max - min));
@@ -262,7 +279,7 @@ console.time('core');;
 		bind(scope) {
 			var method = this;
 			var args = arguments.toArray(1);
-			return function () {
+			return function() {
 				return method.apply(scope, args.concat(arguments.toArray()));
 			};
 		},
@@ -282,6 +299,9 @@ console.time('core');;
 	});
 
 	Baic.extend(STRING_PROTOTYPE, {
+		isJSONString() {
+			return Baic.isJSONString(this);
+		},
 		parseJSON() {
 			return Baic.parseJSON(this);
 		},
@@ -299,7 +319,7 @@ console.time('core');;
 			return this.replace(/^[\s\uFEFF\xA0]+|[\s\uFEFF\xA0]+$/g, "");
 		},
 		toBoolean() {
-			return /^(?:yes|1|on|true)$/i.test(this);
+			return /^(?:yes|ok|1|on|true)$/i.test(this.trim());
 		}
 	});
 

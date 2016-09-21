@@ -1,4 +1,4 @@
-console.time('storage');;
+console.time('store');;
 ((global, factory) => {
   if (typeof module === "object" && typeof module.exports === "object") {
     module.exports = global.Baic ?
@@ -111,4 +111,4 @@ console.time('storage');;
 
   return Baic;
 })
-console.timeEnd('storage');
+console.timeEnd('store');

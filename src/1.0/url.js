@@ -45,9 +45,13 @@ console.time('url');;
         var query = {};
         var isUrl = /^(https?\:\/\/|\.\/|\.\.\/)/i.test(obj);
         var search = location.search.slice(1);
+        var parts, part;
         (isUrl ? obj.split('?')[1] : search).split('&').forEach(function(item) {
-          var parts = item.split('=');
-          if (parts[0]) query[parts[0]] = Url.decode(parts[1]);
+          parts = item.split('=');
+          if (parts[0]) {
+            part = Url.decode(parts[1]);
+            query[parts[0]] = part.isJSONString() ? part.parseJSON() : part;
+          };
         });
         return (obj ? (isUrl ? query : query[obj]) : query);
       }

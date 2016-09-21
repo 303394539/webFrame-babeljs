@@ -96,8 +96,9 @@ console.time('tpl');;
             return Baic.url.decode(a)
           })
           var name = args.shift()
-          if (tpl.tplEventContainer[name]) {
-            tpl.tplEventContainer[name].apply(tpl.context || window, [event].concat(args))
+          var fn = tpl.tplEventContainer[name] || window[name];
+          if (fn && Baic.isFunction(fn)) {
+            fn.apply(tpl.context || window, [event].concat(args))
           }
         } else {
           if(!replace){

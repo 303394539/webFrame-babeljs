@@ -20,12 +20,12 @@ console.time('jsx');;
 
   Baic.extend(Baic.fn, {
     process() {
-      var eventName = this.attr('v-link-event');
-      var link = this.attr("v-link");
-      var replace = (this.attr("v-link-replace") || "").toBoolean();
-      this.removeAttr("v-link")
-      this.removeAttr("v-link-replace")
-      this.removeAttr("v-link-event")
+      var eventName = this.attr('b-link-event');
+      var link = this.attr("b-link");
+      var replace = (this.attr("b-link-replace") || "").toBoolean();
+      this.removeAttr("b-link")
+      this.removeAttr("b-link-replace")
+      this.removeAttr("b-link-event")
       if (link) {
         this.attr('tap-highlight', 'yes')
         var prefix = link.charAt(0);

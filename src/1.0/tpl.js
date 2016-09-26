@@ -80,12 +80,12 @@ console.time('tpl');;
   function _process(el) {
     var tpl = this;
     el = Baic(el);
-    var eventName = el.attr('v-link-event');
-    var link = el.attr("v-link");
-    var replace = /^(?:yes|1|on|true)$/i.test(el.attr("v-link-replace"));
-    el.removeAttr("v-link")
-    el.removeAttr("v-link-replace")
-    el.removeAttr("v-link-event")
+    var eventName = el.attr('b-link-event');
+    var link = el.attr("b-link");
+    var replace = /^(?:yes|1|on|true)$/i.test(el.attr("b-link-replace"));
+    el.removeAttr("b-link")
+    el.removeAttr("b-link-replace")
+    el.removeAttr("b-link-event")
     if (link) {
       el.attr('tap-highlight', 'yes')
       var prefix = link.charAt(0);

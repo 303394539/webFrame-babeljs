@@ -43,7 +43,7 @@ console.time('task');;
           task();
 
         } catch (e) {
-          setTimeout(function() {
+          setTimeout(() => {
             throw e;
           }, 0);
         }

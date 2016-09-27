@@ -170,8 +170,18 @@ console.time('core');;
 
 	Baic.extend({
 		nop() {},
-		nopp() {
-			return new Promise(Baic.nop);
+		nopp: Promise.resolve(),
+		tryCatch(fn){
+			if(!fn || !Baic.isFunction(fn)){
+				return Promise.reject();
+			}
+			return new Promise(((resolve, reject) => {
+				try{
+					resolve(fn.call(this));
+				}catch(e){
+					reject(e);
+				}
+			}).bind(this))
 		},
 		hasOwn(object, property) {
 			return OBJECT_PROTOTYPE.hasOwnProperty.call(object, property);
@@ -183,6 +193,8 @@ console.time('core');;
 		isString: _checktype("string"),
 		isBoolean: _checktype("boolean"),
 		isArray: Array.isArray,
+		fromArray: Array.from,
+		ofArray: Array.of,
 		isNumber: _checktype("number", obj => {
 			return !isNaN(obj);
 		}),
@@ -193,15 +205,13 @@ console.time('core');;
 		isUndefined: _checktype("undefined"),
 		isObject: _checktype("object"),
 		isPlainObject(obj) {
-			if (Baic.type(obj) !== "object" || obj.nodeType || Baic.isWindow(obj)) {
+			return obj && !obj.nodeType && !Baic.isWindow(obj) && Baic.isObject(obj) && !Object.getPrototypeOf(obj) && obj.constructor && Baic.isFunction(obj.constructor);
+		},
+		isEmptyObject(obj) {
+			var name;
+			for (name in obj) {
 				return false;
 			}
-
-			if (obj.constructor &&
-				!Baic.hasOwn.call(obj.constructor.prototype, "isPrototypeOf")) {
-				return false;
-			}
-
 			return true;
 		},
 		isJSON(obj) {

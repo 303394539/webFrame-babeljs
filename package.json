@@ -33,7 +33,7 @@
     "compact": false,
     "presets": ["es2015"],
     "plugins": [
-      "async-to-promises", 
+      "async-to-promises",
       ["transform-react-jsx", {
         "pragma": "Baic.jsx"
       }]

@@ -21,36 +21,43 @@
   </article>
 
 <!-- js -->
-<script src="baic.js"></script>
 <script>
-  Baic.ready(() => {
-    var A = Object.extends({
-      A:2,
-      static: {
-        A: 1
-      }
-    })
-
-    var B = A.extends({
-      B:3,
-      static: {
-        B:2
-      }
-    })
-
-    var C = B.extends(function(){
-      return {
-        C:4,
+  var onload = () => {
+    Baic.ready(() => {
+      var A = Object.extends({
+        A: 2,
         static: {
-          C: 3
+          A: 1
         }
-      }
+      })
+
+      var B = A.extends({
+        B: 3,
+        static: {
+          B: 2
+        }
+      })
+
+      var C = B.extends(() => {
+        return {
+          C: 4,
+          static: {
+            C: 3
+          }
+        }
+      })
+
+      var a = new A();
+      var b = new B();
+      var c = new C();
+
+      console.log(a.A, b.A, b.B, C.C, c.C);
     })
-
-    var a = new A();
-    var b = new B();
-    var c = new C();
-
-    console.log(a.A, b.A, b.B, C.C, c.C);
-  })
+  }
+  document.body.appendChild((() => {
+    var script = document.createElement('script');
+    script.setAttribute('src', 'baic.js?r=' + Date.now().toString(36));
+    script.onload = onload;
+    return script
+  })());
 </script>

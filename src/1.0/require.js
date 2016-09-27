@@ -132,7 +132,7 @@ console.time('require');;
   }
 
   var Require = function() {
-    var args = Array.prototype.slice.call(arguments);
+    var args = Array.from(arguments);
     if (args.length > 0 && Baic.isArray(args[0])) {
       args = args[0];
     }

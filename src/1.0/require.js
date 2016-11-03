@@ -175,10 +175,10 @@ console.time('require');;
       if (main) {
         main.split(';').forEach(item => {
           if (item.indexOf(",") < 0) {
-            require(item)
+            Require(item)
           } else {
             item.split(',').forEach(item => {
-              require(item)
+              Require(item)
             })
           }
         })

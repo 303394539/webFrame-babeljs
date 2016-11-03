@@ -7,11 +7,12 @@
   <meta name="viewport" content="width=device-width, user-scalable=no">
   <noscript><meta http-equiv="refresh" content="0; url=unsupported.html"></noscript>
   <title></title>
+  <link rel="stylesheet" href="app.css">
 </head> 
 <body> 
   <!-- html -->
   <article>
-    <section>
+    <section style="width: 20rem;">
       <img src="" alt="">
       <script name="a" type=text/template class="hide">
         <div v-link=1 v-link-replace=true>1</div>
@@ -22,42 +23,45 @@
 
 <!-- js -->
 <script>
-  var onload = () => {
-    Baic.ready(() => {
-      var A = Object.extends({
-        A: 2,
-        static: {
-          A: 1
-        }
-      })
-
-      var B = A.extends({
-        B: 3,
-        static: {
-          B: 2
-        }
-      })
-
-      var C = B.extends(() => {
-        return {
-          C: 4,
-          static: {
-            C: 3
-          }
-        }
-      })
-
-      var a = new A();
-      var b = new B();
-      var c = new C();
-
-      console.log(a.A, b.A, b.B, C.C, c.C);
+function onload(){
+  Baic.ready(() => {
+    var A = Object.extends({
+      A: 2,
+      static: {
+        A: 1
+      }
     })
-  }
-  document.body.appendChild((() => {
-    var script = document.createElement('script');
-    script.setAttribute('src', 'baic.js?r=' + Date.now().toString(36));
-    script.onload = onload;
-    return script
-  })());
+
+    var B = A.extends({
+      B: 3,
+      static: {
+        B: 2
+      }
+    })
+
+    var C = B.extends(() => {
+      return {
+        C: 4,
+        static: {
+          C: 3
+        }
+      }
+    })
+
+    var a = new A();
+    var b = new B();
+    var c = new C();
+
+    console.log(a.A, b.A, b.B, C.C, c.C);
+
+    new (View.extends({
+    }));
+  })
+}
+document.getElementsByTagName('head')[0].appendChild((() => {
+  var script = document.createElement('script');
+  script.setAttribute('src', 'baic.js?r=' + Date.now().toString(36));
+  script.onload = onload;
+  return script
+})());
 </script>

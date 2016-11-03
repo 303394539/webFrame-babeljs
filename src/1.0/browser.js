@@ -38,7 +38,8 @@ console.time('browser');;
     ios: _EXPS.ios.test(_userAgent),
     wx: _EXPS.wx.test(_userAgent),
     android: _EXPS.android.test(_userAgent),
-    mobile: _EXPS.mobile.test(_userAgent)
+    mobile: _EXPS.mobile.test(_userAgent),
+    pixelRatio: window.devicePixelRatio || 1
   }
 
   Browser.version = (() => {

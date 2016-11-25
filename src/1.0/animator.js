@@ -78,7 +78,7 @@ console.time('animator');;
     }
   });
 
-  var Animator = function(options){
+  var Animator = function(options) {
     Baic.extend(this, {
       duration: 350,
       startValue: 0,

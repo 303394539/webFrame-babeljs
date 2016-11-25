@@ -170,14 +170,14 @@ console.time('core');;
 	Baic.extend({
 		nop() {},
 		nopp: Promise.resolve(),
-		tryCatch(fn){
-			if(!fn || !Baic.isFunction(fn)){
+		tryCatch(fn) {
+			if (!fn || !Baic.isFunction(fn)) {
 				return Promise.reject();
 			}
 			return new Promise(((resolve, reject) => {
-				try{
+				try {
 					resolve(fn.call(this));
-				}catch(e){
+				} catch (e) {
 					reject(e);
 				}
 			}).bind(this))

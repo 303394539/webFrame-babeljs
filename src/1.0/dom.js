@@ -241,7 +241,7 @@ console.time('dom');;
 
   function _addElement(mode) {
     return function(value) {
-      var method = (item, value) => {
+      var method = function(item, value) {
         switch (mode) {
           case 0:
             item.appendChild(value);

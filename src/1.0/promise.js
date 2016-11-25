@@ -18,7 +18,7 @@ console.time('promise');;
 })(typeof window !== "undefined" ? window : this, (window, Baic, noFrame) => {
   'use strict';
 
-  var async = (require => {
+  var async = (function(require) {
     /*jshint maxcomplexity:6*/
 
     // Sniff "best" async scheduling option
@@ -97,7 +97,7 @@ console.time('promise');;
     }
   })();
 
-  var Scheduler = (() => {
+  var Scheduler = (function() {
 
     // Credit to Twisol (https://github.com/Twisol) for suggesting
     // this type of extensible queue + trampoline approach for next-tick conflation.
@@ -117,7 +117,7 @@ console.time('promise');;
       this._afterQueueLen = 0;
 
       var self = this;
-      this.drain = () => {
+      this.drain = function() {
         self._drain();
       };
     }
@@ -126,7 +126,7 @@ console.time('promise');;
      * Enqueue a task
      * @param {{ run:function }} task
      */
-    Scheduler.prototype.enqueue = task => {
+    Scheduler.prototype.enqueue = function(task) {
       this._queue[this._queueLen++] = task;
       this.run();
     };
@@ -135,12 +135,12 @@ console.time('promise');;
      * Enqueue a task to run after the main task queue
      * @param {{ run:function }} task
      */
-    Scheduler.prototype.afterQueue = task => {
+    Scheduler.prototype.afterQueue = function(task) {
       this._afterQueue[this._afterQueueLen++] = task;
       this.run();
     };
 
-    Scheduler.prototype.run = () => {
+    Scheduler.prototype.run = function() {
       if (!this._running) {
         this._running = true;
         this._async(this.drain);
@@ -150,7 +150,7 @@ console.time('promise');;
     /**
      * Drain the handler queue entirely, and then the after queue
      */
-    Scheduler.prototype._drain = () => {
+    Scheduler.prototype._drain = function() {
       var i = 0;
       for (; i < this._queueLen; ++i) {
         this._queue[i].run();
@@ -172,7 +172,7 @@ console.time('promise');;
 
   })();
 
-  var makePromise = (() => {
+  var makePromise = (function() {
 
     return makePromise = environment => {
 
@@ -181,7 +181,7 @@ console.time('promise');;
 
       var objectCreate = Object.create ||
         function(proto) {
-          Child = () => {}
+          Child = function() {}
           Child.prototype = proto;
           return new Child();
         };
@@ -296,7 +296,7 @@ console.time('promise');;
        * @param {function=} onProgress @deprecated progress handler
        * @return {Promise} new promise
        */
-      Promise.prototype.then = (onFulfilled, onRejected, onProgress) => {
+      Promise.prototype.then = function(onFulfilled, onRejected, onProgress) {
         var parent = this._handler;
         var state = parent.join().state();
 
@@ -320,7 +320,7 @@ console.time('promise');;
        * @param {function?} onRejected
        * @return {Promise}
        */
-      Promise.prototype['catch'] = onRejected => {
+      Promise.prototype['catch'] = function(onRejected) {
         return this.then(void 0, onRejected);
       };
 
@@ -329,7 +329,7 @@ console.time('promise');;
        * @private
        * @returns {Promise}
        */
-      Promise.prototype._beget = () => {
+      Promise.prototype._beget = function() {
         return begetFrom(this._handler, this.constructor);
       };
 
@@ -538,7 +538,7 @@ console.time('promise');;
 
       Handler.prototype._state = 0;
 
-      Handler.prototype.state = () => {
+      Handler.prototype.state = function() {
         return this._state;
       };
 
@@ -547,7 +547,7 @@ console.time('promise');;
        * nearest to the fully resolved value.
        * @returns {object} handler nearest the fully resolved value
        */
-      Handler.prototype.join = () => {
+      Handler.prototype.join = function() {
         var h = this;
         while (h.handler !== void 0) {
           h = h.handler;
@@ -555,7 +555,7 @@ console.time('promise');;
         return h;
       };
 
-      Handler.prototype.chain = (to, receiver, fulfilled, rejected, progress) => {
+      Handler.prototype.chain = function(to, receiver, fulfilled, rejected, progress) {
         this.when({
           resolver: to,
           receiver: receiver,
@@ -565,11 +565,11 @@ console.time('promise');;
         });
       };
 
-      Handler.prototype.visit = (receiver, fulfilled, rejected, progress) => {
+      Handler.prototype.visit = function(receiver, fulfilled, rejected, progress) {
         this.chain(failIfRejected, receiver, fulfilled, rejected, progress);
       };
 
-      Handler.prototype.fold = (f, z, c, to) => {
+      Handler.prototype.fold = function(f, z, c, to) {
         this.when(new Fold(f, z, c, to));
       };
 
@@ -616,7 +616,7 @@ console.time('promise');;
         this.become(new Rejected(x));
       };
 
-      Pending.prototype.join = () => {
+      Pending.prototype.join = function() {
         if (!this.resolved) {
           return this;
         }
@@ -633,7 +633,7 @@ console.time('promise');;
         return h;
       };
 
-      Pending.prototype.run = () => {
+      Pending.prototype.run = function() {
         var q = this.consumers;
         var handler = this.handler;
         this.handler = this.handler.join();
@@ -690,7 +690,7 @@ console.time('promise');;
         this.resolved && this.handler.join()._report(context);
       };
 
-      Pending.prototype._unreport = () => {
+      Pending.prototype._unreport = function() {
         this.resolved && this.handler.join()._unreport();
       };
 
@@ -713,7 +713,7 @@ console.time('promise');;
         this.join()._report(context);
       };
 
-      Async.prototype._unreport = () => {
+      Async.prototype._unreport = function() {
         this.join()._unreport();
       };
 
@@ -744,7 +744,7 @@ console.time('promise');;
 
       Fulfilled.prototype._state = 1;
 
-      Fulfilled.prototype.fold = (f, z, c, to) => {
+      Fulfilled.prototype.fold = function(f, z, c, to) {
         runContinuation3(f, z, this, c, to);
       };
 
@@ -774,7 +774,7 @@ console.time('promise');;
 
       Rejected.prototype._state = -1;
 
-      Rejected.prototype.fold = (f, z, c, to) => {
+      Rejected.prototype.fold = function(f, z, c, to) {
         to.become(this);
       };
 
@@ -789,7 +789,7 @@ console.time('promise');;
         tasks.afterQueue(new ReportTask(this, context));
       };
 
-      Rejected.prototype._unreport = () => {
+      Rejected.prototype._unreport = function() {
         if (this.handled) {
           return;
         }
@@ -808,7 +808,7 @@ console.time('promise');;
         this.context = context;
       }
 
-      ReportTask.prototype.run = () => {
+      ReportTask.prototype.run = function() {
         if (!this.rejection.handled && !this.rejection.reported) {
           this.rejection.reported = true;
           emitRejection('unhandledRejection', this.rejection) ||
@@ -820,7 +820,7 @@ console.time('promise');;
         this.rejection = rejection;
       }
 
-      UnreportTask.prototype.run = () => {
+      UnreportTask.prototype.run = function() {
         if (this.rejection.reported) {
           emitRejection('rejectionHandled', this.rejection) ||
             Promise.onPotentiallyUnhandledRejectionHandled(this.rejection);
@@ -852,7 +852,7 @@ console.time('promise');;
         this.handler = handler;
       }
 
-      ContinuationTask.prototype.run = () => {
+      ContinuationTask.prototype.run = function() {
         this.handler.join().when(this.continuation);
       };
 
@@ -865,7 +865,7 @@ console.time('promise');;
         this.value = value;
       }
 
-      ProgressTask.prototype.run = () => {
+      ProgressTask.prototype.run = function() {
         var q = this.handler.consumers;
         if (q === void 0) {
           return;
@@ -890,7 +890,7 @@ console.time('promise');;
         this.resolver = resolver;
       }
 
-      AssimilateTask.prototype.run = () => {
+      AssimilateTask.prototype.run = function() {
         var h = this.resolver;
         tryAssimilate(this._then, this.thenable, _resolve, _reject, _notify);
 

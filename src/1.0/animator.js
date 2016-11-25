@@ -19,13 +19,9 @@ console.time('animator');;
   'use strict';
 
   var _VENDORS = [];
-  Baic.VENDORS.forEach(item => {
+  Baic.each(Baic.VENDORS, item => {
     _VENDORS.unshift(item.replace(/-/g, ""));
   });
-
-  var Animator = options => {
-    return new _Animator(options);
-  }
 
   var _requestAnimationFrame = ((index, fn) => {
     while (index-- && !(fn = window[(_VENDORS[index] + "RequestAnimationFrame").firstLowerCase()]));
@@ -44,7 +40,7 @@ console.time('animator');;
   Baic.extend(window, {
     requestAnimationFrame: _requestAnimationFrame,
     cancelAnimationFrame: _cancelAnimationFrame
-  })
+  });
 
   Baic.extend({
     easing: {
@@ -82,21 +78,22 @@ console.time('animator');;
     }
   });
 
-  var _Animator = options => {
-    Baic.extend(_Animator.prototype, options);
+  var Animator = function(options){
+    Baic.extend(this, {
+      duration: 350,
+      startValue: 0,
+      endValue: 1,
+      reversed: false,
+      easing: Baic.easing.linear,
+      onStep: Baic.nop,
+      onStop: Baic.nop,
+      onEnd: Baic.nop
+    }, options);
   }
 
-  Baic.extend(_Animator.prototype, {
-    duration: 350,
-    startValue: 0,
-    endValue: 1,
-    reversed: false,
-    easing: Baic.easing.linear,
-    onStep: Baic.nop,
-    onStop: Baic.nop,
-    onEnd: Baic.nop,
+  Baic.extend(Animator.prototype, {
     start() {
-      _cancel(this);
+      this.stop();
 
       this.starttime = this.frametime = Date.now();
       this.value = this.startValue;

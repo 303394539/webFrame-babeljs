@@ -160,7 +160,7 @@ console.time('require');;
         setTimeout(_DOMLoaded, 100)
       }
     }).then(() => {
-      return Promise.all(args.map(item => {
+      return Promise.all(Baic.map(args, item => {
         return item ? _load(item) : Promise.resolve();
       }))
     });
@@ -173,11 +173,11 @@ console.time('require');;
     if (script.hasAttribute("data-require")) {
       main = script.getAttribute("data-require");
       if (main) {
-        main.split(';').forEach(item => {
+        Baic.each(main.split(';'), item => {
           if (item.indexOf(",") < 0) {
             Require(item)
           } else {
-            item.split(',').forEach(item => {
+            Baic.each(item.split(','), item => {
               Require(item)
             })
           }

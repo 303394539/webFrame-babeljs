@@ -24,11 +24,10 @@ console.time('oop');;
         this.init.apply(this, arguments)
       }
     }
-    this.prototype.__needinit__ = 0;
     var prototype = new this();
-    this.prototype.__needinit__ = 1;
+    prototype.__needinit__ = 1;
     var rtn = (Baic.isFunction(obj) ? obj() : obj) || {};
-    rtn.forEach((value, key) => {
+    Baic.each(rtn, (value, key) => {
       switch (key) {
         case "__superclass__":
         case "__class__":
@@ -52,9 +51,8 @@ console.time('oop');;
       __superclass__: prototype,
       extends: _extends,
       create() {
-        this.prototype.__needinit__ = 0;
         var obj = new this();
-        this.prototype.__needinit__ = 1;
+        obj.__needinit__ = 1;
         obj.init.apply(obj, arguments);
         return obj
       }

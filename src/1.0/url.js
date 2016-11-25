@@ -46,7 +46,7 @@ console.time('url');;
         var isUrl = /^(https?\:\/\/|\.\/|\.\.\/)/i.test(obj);
         var search = location.search.slice(1);
         var parts, part;
-        (isUrl ? obj.split('?')[1] : search).split('&').forEach(item => {
+        Baic.each((isUrl ? obj.split('?')[1] : search).split('&'), item => {
           parts = item.split('=');
           if (parts[0]) {
             part = Url.decode(parts[1]);

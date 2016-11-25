@@ -32,7 +32,7 @@ console.time('jsx');;
         this.on(eventName || "singleTap", event => {
           event.stopPropagation()
           if (prefix === "*") {
-            var args = link.substring(1).split(/\s+/).map(item => {
+            var args = Baic.map(link.substring(1).split(/\s+/), item => {
               return Baic.url.decode(item)
             })
             var name = args.shift()
@@ -49,7 +49,7 @@ console.time('jsx');;
           }
         })
       }
-      this.children().forEach(child => {
+      Baic.each(this.children(), child => {
         Baic(child).process();
       })
       return this;
@@ -65,14 +65,14 @@ console.time('jsx');;
         properties.tag = type.tag
       }
       if (arguments.length > 2) {
-        children = arguments.toArray().slice(2)
+        children = Baic.toArray(arguments).slice(2)
         if (children[0] && !children[0].isB) {
           properties.html = children[0]
           children.shift()
         }
-        properties.components = children.filter(value => {
+        properties.components = Baic.map(children.filter(value => {
           return value != null && value !== false && value !== ''
-        }).map(value => {
+        }), value => {
           return value.isB ? value : Baic.$('' + value);
         })
       }

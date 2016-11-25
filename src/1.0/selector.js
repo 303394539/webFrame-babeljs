@@ -38,7 +38,7 @@ console.time('selector');;
         if (IS_HTML_FRAGMENT.test(selector)) {
           TMP_CONTAINER.innerHTML = "" + selector;
           var tmp_container = Baic(TMP_CONTAINER);
-          var nodes = tmp_container.children().toArray();
+          var nodes = Baic.toArray(tmp_container.children());
           tmp_container.empty();
           return nodes;
         } else {
@@ -47,7 +47,7 @@ console.time('selector');;
             if (dom.length === 1) {
               dom = Baic.selector(dom[0], children);
             } else {
-              dom = dom.map(item => {
+              dom = Baic.map(dom, item => {
                 return Baic.selector(item, children);
               });
             }
@@ -71,24 +71,24 @@ console.time('selector');;
         elements = dom.querySelectorAll(selector);
       }
 
-      return elements.nodeType ? [elements] : elements.toArray();
+      return elements.nodeType ? [elements] : Baic.toArray(elements);
     }
   });
 
   Baic.extend(Baic.fn, {
     find(selector) {
-      return Baic(this.map(item => {
+      return Baic.flatten(Baic(Baic.map(this, item => {
         return Baic.selector(item, selector);
-      }).flatten());
+      })));
     },
     parent(selector) {
       if (!selector) {
-        return Baic(this.map(item => {
+        return Baic(Baic.map(this, item => {
           return item.parentNode;
         }));
       } else {
         var ancestors = [];
-        return Baic(this.map(item => {
+        return Baic(Baic.map(this, item => {
           if (item && (item = item.parentNode) && item !== document && ancestors.indexOf(item) < 0 && ancestors.push(item) && _filtered(item, selector)) {
             return item;
           }
@@ -97,18 +97,18 @@ console.time('selector');;
     },
     siblings(selector) {
       var siblings = [];
-      return Baic(this.map(item => {
-        return item.parentNode.children.toArray().filter(child => {
+      return Baic.flatten(Baic(Baic.map(this, item => {
+        return Baic.toArray(item.parentNode.children).filter(child => {
           return (siblings.indexOf(child) < 0 && siblings.push(child)) && (child !== item && _filtered(item, selector));
         });
-      }).flatten());
+      })));
     },
     children(selector) {
-      return Baic(this.map(item => {
-        return item.children.toArray().filter(child => {
+      return Baic.flatten(Baic(Baic.map(this, item => {
+        return Baic.toArray(item.children).filter(child => {
           return _filtered(child, selector);
         });
-      }).flatten());
+      })));
     },
     first() {
       return Baic(this[0]);

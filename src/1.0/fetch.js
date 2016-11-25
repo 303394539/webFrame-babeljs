@@ -39,11 +39,11 @@ console.time('fetch');;
     var self = this;
     self.map = {};
     if (headers instanceof Headers) {
-      headers.forEach((value, name) => {
+      Baic.each(headers, (value, name) => {
         this.append(name, value)
       })
     } else if (headers) {
-      Object.getOwnPropertyNames(headers).forEach(name => {
+      Baic.each(Object.getOwnPropertyNames(headers), name => {
         self.append(name, headers[name])
       })
     }
@@ -62,8 +62,8 @@ console.time('fetch');;
     },
     forEach(callback) {
       var self = this;
-      Object.getOwnPropertyNames(self.map).forEach(name => {
-        self.map[name].forEach(value => {
+      Baic.each(Object.getOwnPropertyNames(self.map), name => {
+        Baic.each(self.map[name], value => {
           callback.call(self, value, name)
         })
       })
@@ -255,7 +255,7 @@ console.time('fetch');;
 
   function _decode(body) {
     var form = new FormData()
-    body.trim().split('&').forEach(bytes => {
+    Baic.each(body.trim().split('&'), bytes => {
       if (bytes) {
         var split = bytes.split('=')
         var name = split.shift().replace(/\+/g, ' ')
@@ -269,7 +269,7 @@ console.time('fetch');;
   function _headers(xhr) {
     var head = new Headers()
     var pairs = xhr.getAllResponseHeaders().trim().split('\n')
-    pairs.forEach(header => {
+    Baic.each(pairs, header => {
       var split = header.trim().split(':')
       var key = split.shift().trim()
       var value = split.join(':').trim()
@@ -382,7 +382,7 @@ console.time('fetch');;
         xhr.responseType = 'blob'
       }
 
-      request.headers.forEach((value, name) => {
+      Baic.each(request.headers, (value, name) => {
         xhr.setRequestHeader(name, value)
       })
 

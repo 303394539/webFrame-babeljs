@@ -35,8 +35,8 @@ console.time('touch');;
     firstTouch = [],
     lastTouch = [];
 
-  TOUCH_EVENTS.forEach(eventName => {
-    Baic.fn[eventName] = callback => {
+  Baic.each(TOUCH_EVENTS, eventName => {
+    Baic.fn[eventName] = function(callback) {
       this.on(eventName, callback);
     }
   });
@@ -169,7 +169,7 @@ console.time('touch');;
         dy: touch.dy
       });
 
-      EVENT_ATTRIBUTE.forEach(item => {
+      Baic.each(EVENT_ATTRIBUTE, item => {
         params[item] = EVENT.type === 'touchend' &&
           EVENT.changedTouches && EVENT.changedTouches[0] &&
           EVENT.changedTouches[0][item] ||

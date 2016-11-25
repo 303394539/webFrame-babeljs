@@ -110,61 +110,60 @@ console.time('core');;
 		}
 
 		return target;
-	}
+	};
 
-	Baic.extend(OBJECT_PROTOTYPE, {
-		forEach(fn, scope) {
-			if (Baic.isArray(this)) {
-				ARRAY_PROTOTYPE.forEach.apply(this, arguments);
+	Baic.extend({
+		each(obj, fn, scope) {
+			if (Baic.isArray(obj)) {
+				ARRAY_PROTOTYPE.forEach.apply(obj, Baic.toArray(arguments, 1));
 			} else {
-				for (var key in this)
-					if (Baic.hasOwn(this, key)) {
-						fn.call(scope, this[key], key, this);
+				for (var key in obj)
+					if (Baic.hasOwn(obj, key)) {
+						fn.call(scope, obj[key], key, obj);
 					}
 			}
 		},
-		map(fn, scope) {
-			if (Baic.isArray(this)) {
-				return ARRAY_PROTOTYPE.map.apply(this, arguments);
+		map(obj, fn, scope) {
+			if (Baic.isArray(obj)) {
+				return ARRAY_PROTOTYPE.map.apply(obj, Baic.toArray(arguments, 1));
 			} else {
 				var result = {};
-				this.forEach((value, key, object) => {
+				Baic.each(obj, (value, key, object) => {
 					result[key] = fn.call(scope, value, key, object);
 				});
 				return result;
 			}
 		},
-		toArray(begin, end) {
-			return ARRAY_PROTOTYPE.slice.call(this, begin, end);
+		toArray(obj, begin, end) {
+			return ARRAY_PROTOTYPE.slice.call(obj, begin, end);
 		},
-		toStr(type) {
+		toStr(obj) {
 			try {
-				return Baic.isString(this) ? this : this === true ? "yes" : this === false ? "no" : JSON.stringify(this);
+				return Baic.isString(obj) ? obj : obj === true ? "yes" : obj === false ? "no" : JSON.stringify(obj);
 			} catch (e) {
-				return this;
+				return obj;
 			}
 		},
-		flatten() {
-			return this.length ? [].concat.apply([], this) : this;
+		flatten(obj) {
+			return obj.length ? [].concat.apply([], obj) : obj;
 		},
-		getGlobalVariable() {
-			var self = this;
+		getGlobalVariable(obj) {
 			var iframe = document.createElement('iframe');
 			iframe.style.display = "none";
 			iframe.onload = () => {
 				var iframeKeys = Object.keys(iframe.contentWindow);
 				var keys = [];
-				Object.keys(self).forEach(key => {
+				Baic.each(Object.keys(obj), key => {
 					if (!(key in iframeKeys)) {
 						keys.push(key)
 					}
 				});
 				iframe.remove();
-				self.__globalVariable__ = keys;
+				obj.__globalVariable__ = keys;
 			};
 			iframe.src = 'about:blank';
 			document.body.appendChild(iframe);
-			return self.__globalVariable__;
+			return obj.__globalVariable__;
 		}
 	});
 
@@ -270,10 +269,10 @@ console.time('core');;
 	});
 
 	function _checktype(type) {
-		var args = arguments.toArray(1);
+		var args = Baic.toArray(arguments, 1);
 		return obj => {
 			var bool = true;
-			if (args.length) args.forEach(item => {
+			if (args.length) Baic.each(args, item => {
 				if (!bool) return;
 				if (Baic.isFunction(item)) {
 					bool = item(obj);
@@ -288,16 +287,16 @@ console.time('core');;
 	Baic.extend(FUNCTION_PROTOTYPE, {
 		bind(scope) {
 			var method = this;
-			var args = arguments.toArray(1);
+			var args = Baic.toArray(arguments, 1);
 			return function() {
-				return method.apply(scope, args.concat(arguments.toArray()));
+				return method.apply(scope, args.concat(Baic.toArray(arguments)));
 			};
 		},
 		defer() {
-			return this._job = setTimeout.apply(null, [this].concat(arguments.toArray()));
+			return this._job = setTimeout.apply(null, [this].concat(Baic.toArray(arguments)));
 		},
 		cycle() {
-			return this._cycle = setInterval.apply(null, [this].concat(arguments.toArray()));
+			return this._cycle = setInterval.apply(null, [this].concat(Baic.toArray(arguments)));
 		},
 		cancel(type = 1) {
 			if (this._job && type === 1) {
@@ -418,22 +417,22 @@ console.time('core');;
 
 	Baic.extend(Number, {
 		add() {
-			return arguments.toArray().reduce((arg1, arg2) => {
+			return Baic.toArray(arguments).reduce((arg1, arg2) => {
 				return _add(arg1, arg2);
 			})
 		},
 		sub() {
-			return arguments.toArray().reduce((arg1, arg2) => {
+			return Baic.toArray(arguments).reduce((arg1, arg2) => {
 				return _sub(arg1, arg2);
 			})
 		},
 		mul() {
-			return arguments.toArray().reduce((arg1, arg2) => {
+			return Baic.toArray(arguments).reduce((arg1, arg2) => {
 				return _mul(arg1, arg2);
 			})
 		},
 		div(arg1, arg2) {
-			return arguments.toArray().reduce((arg1, arg2) => {
+			return Baic.toArray(arguments).reduce((arg1, arg2) => {
 				return _div(arg1, arg2);
 			})
 		}
@@ -451,16 +450,16 @@ console.time('core');;
 			}
 		},
 		add() {
-			return Number.add.apply(this, [].concat.apply(this, arguments.toArray()));
+			return Number.add.apply(this, [].concat.apply(this, Baic.toArray(arguments)));
 		},
 		sub() {
-			return Number.sub.apply(this, [].concat.apply(this, arguments.toArray()));
+			return Number.sub.apply(this, [].concat.apply(this, Baic.toArray(arguments)));
 		},
 		mul() {
-			return Number.mul.apply(this, [].concat.apply(this, arguments.toArray()));
+			return Number.mul.apply(this, [].concat.apply(this, Baic.toArray(arguments)));
 		},
 		div() {
-			return Number.div.apply(this, [].concat.apply(this, arguments.toArray()));
+			return Number.div.apply(this, [].concat.apply(this, Baic.toArray(arguments)));
 		}
 	});
 

@@ -21,13 +21,13 @@ console.time('tpl');;
   class Tpl{
     constructor(context = Baic(document.body)){
       var self = this;
-      context.find("script[type='text/template']").forEach(item => {
+      Baic.each(context.find("script[type='text/template']"), item => {
         var dom = Baic(item)
         self.tplMap[dom.attr("name")] = dom.html().replace(/>\s+</g, '><').trim();
         dom.remove()
       })
       self.context = context;
-      context.children().forEach(_process.bind(self))
+      Baic.each(context.children(), _process.bind(self))
     }
     on(fnName, fn) {
       if (Baic.isObject(fnName)) {
@@ -92,7 +92,7 @@ console.time('tpl');;
       el.on(eventName || "singleTap", event => {
         event.stopPropagation()
         if (prefix === "*") {
-          var args = link.substring(1).split(/\s+/).map(a => {
+          var args = Baic.map(link.substring(1).split(/\s+/), a => {
             return Baic.url.decode(a)
           })
           var name = args.shift()
@@ -109,13 +109,13 @@ console.time('tpl');;
         }
       })
     }
-    el.children().forEach(_process.bind(tpl))
+    Baic.each(el.children(), _process.bind(tpl))
   }
 
   function _parseTplDom(html = "", obj = {}){
     html = html.replace(FIRST_EXP, "")
     var dom = Baic(html);
-    dom.forEach(_process.bind(this))
+    Baic.each(dom, _process.bind(this))
     return dom;
   }
 

@@ -102,7 +102,7 @@ console.time('task');;
   })
 
   var _runQueue = () => {
-    _queue.forEach((fn, key) => {
+    Baic.each(_queue, (fn, key) => {
       var args = _queueArgs[key]
       fn.result = fn.apply(args[0], args.slice(1))
     })
@@ -110,7 +110,7 @@ console.time('task');;
   }
 
   var _runAsync = () => {
-    _async.forEach((fn, key) => {
+    Baic.each(_async, (fn, key) => {
       asap(() => {
         var args = _asyncArgs[key]
         fn.result = fn.apply(args[0], args.slice(1))
@@ -139,7 +139,7 @@ console.time('task');;
       })
     },
     inject() {
-      var args = arguments.toArray();
+      var args = Baic.toArray(arguments);
       var scope = args[0];
       if (!scope) {
         return {}
@@ -173,7 +173,7 @@ console.time('task');;
 
   Baic.extend(Function.prototype, {
     queue() {
-      var args = arguments.toArray()
+      var args = Baic.toArray(arguments)
       args.unshift(this)
       _queue[_index] = this
       _queueArgs[_index] = args
@@ -183,7 +183,7 @@ console.time('task');;
       return this
     },
     async() {
-      var args = arguments.toArray()
+      var args = Baic.toArray(arguments)
       args.unshift(this)
       _async[_index] = this
       _asyncArgs[_index] = args
@@ -193,7 +193,7 @@ console.time('task');;
       return this
     },
     inject() {
-      return _Task.inject.apply(this, [this].concat(arguments.toArray()))
+      return _Task.inject.apply(this, [this].concat(Baic.toArray(arguments)))
     }
   })
 

@@ -61,7 +61,7 @@ console.time('event');;
   Baic.extend(Baic.fn, {
     on(eventName, callback, bool) {
       var event = _getEventName(eventName);
-      this.forEach(item => {
+      Baic.each(this, item => {
         var id = Baic.id(item);
         var elementHandlers = _HANDLERS[id] || (_HANDLERS[id] = []);
         var handler = {
@@ -78,9 +78,9 @@ console.time('event');;
     },
     off(eventName, callback, bool) {
       var event = _getEventName(eventName);
-      this.forEach(item => {
+      Baic.each(this, item => {
         var id = Baic.id(item);
-        (_HANDLERS[id] || []).forEach(handler => {
+        Baic.each((_HANDLERS[id] || []), handler => {
           if (handler && (!event || handler.event === event) && (!callback || handler.callback === callback)) {
             delete _HANDLERS[id][handler.index];
             Baic.removeEventListener(item, handler.event, handler.proxy, bool);
@@ -96,7 +96,7 @@ console.time('event');;
       if (!Baic.isNull(srcEvent)) {
         event.srcEvent = srcEvent;
       }
-      this.forEach(item => {
+      Baic.each(this, item => {
         item.dispatchEvent(event);
       });
       return this;

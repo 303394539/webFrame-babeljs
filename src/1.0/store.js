@@ -25,7 +25,7 @@ console.time('store');;
       set(key, value, expires) {
         if (_isValidKey.test(key)) {
           if (Baic.isObject(value)) {
-            value = "@" + value.toStr();
+            value = "@" + Baic.toStr(value);
           }
           window.localStorage.setItem(key, value);
           if (expires) {
@@ -86,7 +86,7 @@ console.time('store');;
           } else {
             expires = "";
           }
-          document.cookie = encodeURIComponent(key) + '=' + encodeURIComponent(value.toStr()) + expires;
+          document.cookie = encodeURIComponent(key) + '=' + encodeURIComponent(Baic.toStr(value)) + expires;
         }
       },
       remove(key) {
@@ -98,7 +98,7 @@ console.time('store');;
         }
       },
       clearAll() {
-        (document.cookie.match(/[^ =;]+(?=\=)/g) || []).forEach(Baic.cookie.remove.bind(this));
+        Baic.each((document.cookie.match(/[^ =;]+(?=\=)/g) || []), Baic.cookie.remove.bind(this));
       }
     }
   });

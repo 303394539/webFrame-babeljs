@@ -77,9 +77,9 @@ console.time('selector');;
 
   Baic.extend(Baic.fn, {
     find(selector) {
-      return Baic.flatten(Baic(Baic.map(this, item => {
+      return Baic.flatten(Baic.map(this, item => {
         return Baic.selector(item, selector);
-      })));
+      }));
     },
     parent(selector) {
       if (!selector) {

@@ -48,7 +48,7 @@ module.exports = function(grunt) {
           drop_console: true
         },
         mangle: false,
-        sourceMap: true,
+        // sourceMap: true,
         preserveComments: false,
         report: "min",
         beautify: {

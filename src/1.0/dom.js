@@ -395,7 +395,7 @@ console.time('dom');;
     } else if (Baic.isArray(parentNode)) {
       parentNode = parentNode[0];
     }
-    return Baic(_createElements(elements));
+    return Baic(_createElements(elements, parentNode));
   }
 
   Baic.extend({

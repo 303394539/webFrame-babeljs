@@ -145,7 +145,7 @@ console.time('core');;
 			}
 		},
 		flatten(obj) {
-			return obj.length ? [].concat.apply([], obj) : obj;
+			return Baic(obj.length ? [].concat.apply([], obj) : obj);
 		},
 		getGlobalVariable(obj) {
 			var iframe = document.createElement('iframe');

@@ -131,10 +131,9 @@ console.time('require');;
     return Promise.resolve(complete)
   }
 
-  var Require = function() {
-    var args = Array.from(arguments);
-    if (args.length > 0 && Baic.isArray(args[0])) {
-      args = args[0];
+  var Require = function(arr) {
+    if(!Baic.isArray(arr)){
+      arr = [arr];
     }
     return new Promise(resolve => {
       function _DOMLoaded() {
@@ -160,7 +159,7 @@ console.time('require');;
         setTimeout(_DOMLoaded, 100)
       }
     }).then(() => {
-      return Promise.all(Baic.map(args, item => {
+      return Promise.all(Baic.map(arr, item => {
         return item ? _load(item) : Promise.resolve();
       }))
     });

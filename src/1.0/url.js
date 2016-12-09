@@ -26,7 +26,7 @@ console.time('url');;
       return /%u[0-9a-f]{4}/i.test(str) ? unescape(str) : decodeURIComponent(str);
     },
     build(query = {}, url = location.href) {
-      return url + Url.query(query, url.endsWith("?") ? "" : (url.indexOf("?") >= 0 ? "&" : "?"));
+      return url + Url.query(query, url.indexOf("?") >= 0 ? "&" : "?");
     },
     query(obj, prefix = "") {
       if (Baic.isJSON(obj)) {

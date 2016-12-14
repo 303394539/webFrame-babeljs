@@ -604,11 +604,11 @@ console.time('promise');;
 
       Pending.prototype._state = 0;
 
-      Pending.prototype.resolve = x => {
+      Pending.prototype.resolve = function(x) {
         this.become(getHandler(x));
       };
 
-      Pending.prototype.reject = x => {
+      Pending.prototype.reject = function(x) {
         if (this.resolved) {
           return;
         }
@@ -644,7 +644,7 @@ console.time('promise');;
         }
       };
 
-      Pending.prototype.become = handler => {
+      Pending.prototype.become = function(handler) {
         if (this.resolved) {
           return;
         }
@@ -660,7 +660,7 @@ console.time('promise');;
         }
       };
 
-      Pending.prototype.when = continuation => {
+      Pending.prototype.when = function(continuation) {
         if (this.resolved) {
           tasks.enqueue(new ContinuationTask(continuation, this.handler));
         } else {
@@ -675,18 +675,18 @@ console.time('promise');;
       /**
        * @deprecated
        */
-      Pending.prototype.notify = x => {
+      Pending.prototype.notify = function(x) {
         if (!this.resolved) {
           tasks.enqueue(new ProgressTask(x, this));
         }
       };
 
-      Pending.prototype.fail = context => {
+      Pending.prototype.fail = function(context) {
         var c = typeof context === 'undefined' ? this.context : context;
         this.resolved && this.handler.join().fail(c);
       };
 
-      Pending.prototype._report = context => {
+      Pending.prototype._report = function(context) {
         this.resolved && this.handler.join()._report(context);
       };
 
@@ -705,11 +705,11 @@ console.time('promise');;
 
       inherit(Handler, Async);
 
-      Async.prototype.when = continuation => {
+      Async.prototype.when = function(continuation) {
         tasks.enqueue(new ContinuationTask(continuation, this));
       };
 
-      Async.prototype._report = context => {
+      Async.prototype._report = function(context) {
         this.join()._report(context);
       };
 
@@ -748,7 +748,7 @@ console.time('promise');;
         runContinuation3(f, z, this, c, to);
       };
 
-      Fulfilled.prototype.when = cont => {
+      Fulfilled.prototype.when = function(cont) {
         runContinuation1(cont.fulfilled, this, cont.receiver, cont.resolver);
       };
 
@@ -778,14 +778,14 @@ console.time('promise');;
         to.become(this);
       };
 
-      Rejected.prototype.when = cont => {
+      Rejected.prototype.when = function(cont) {
         if (typeof cont.rejected === 'function') {
           this._unreport();
         }
         runContinuation1(cont.rejected, this, cont.receiver, cont.resolver);
       };
 
-      Rejected.prototype._report = context => {
+      Rejected.prototype._report = function(context) {
         tasks.afterQueue(new ReportTask(this, context));
       };
 
@@ -797,7 +797,7 @@ console.time('promise');;
         tasks.afterQueue(new UnreportTask(this));
       };
 
-      Rejected.prototype.fail = context => {
+      Rejected.prototype.fail = function(context) {
         this.reported = true;
         emitRejection('unhandledRejection', this);
         Promise.onFatalRejection(this, context === void 0 ? this.context : context);
@@ -928,15 +928,15 @@ console.time('promise');;
         this.receiver = this;
       }
 
-      Fold.prototype.fulfilled = x => {
+      Fold.prototype.fulfilled = function(x) {
         this.f.call(this.c, this.z, x, this.to);
       };
 
-      Fold.prototype.rejected = x => {
+      Fold.prototype.rejected = function(x) {
         this.to.reject(x);
       };
 
-      Fold.prototype.progress = x => {
+      Fold.prototype.progress = function(x) {
         this.to.notify(x);
       };
 

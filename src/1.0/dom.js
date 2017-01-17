@@ -111,7 +111,7 @@ console.time('dom');;
         return this.attr("data-" + name, value);
       }
     },
-    removeDate(name) {
+    removeData(name) {
       return this.removeAttr("data-" + name);
     },
     val(value) {

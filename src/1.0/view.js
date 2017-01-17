@@ -94,7 +94,7 @@ console.time('view');;
     }
     return {
       context: Baic(document.body),
-      appendContext: null,
+      defaultAppendContext: null,
       init() {
         View.adaptive();
         if (!Baic.browser.android || Baic.browser.android > 4.3) {
@@ -108,9 +108,9 @@ console.time('view');;
         Baic.each(this.context.children(), _process.bind(this))
       },
       tplMap: {},
-      setAppendContext(target){
+      setDefaultAppendContext(target){
         if(target){
-          this.appendContext = target.isB ? target : Baic(target);
+          this.defaultAppendContext = target.isB ? target : Baic(target);
         }
       },
       appendTpl(name, obj, target) {
@@ -123,7 +123,7 @@ console.time('view');;
           var dom = Baic(html);
           Baic.each(dom, _process.bind(this));
           if (target) {
-            target = target.isB ? target : (target.appendContext ? target.appendContext : Baic(target));
+            target = target.isB ? target : (target.defaultAppendContext ? target.defaultAppendContext : Baic(target));
             target.append(dom);
           }
           return dom;

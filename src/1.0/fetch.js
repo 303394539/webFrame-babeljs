@@ -1,21 +1,17 @@
 console.time('fetch');;
-((global, factory) => {
-  if (typeof module === "object" && typeof module.exports === "object") {
-    module.exports = global.Baic ?
-      factory(global, global.Baic, true) :
-      ((w, frame) => {
-        if (!w.Baic) {
-          throw new Error("fetch requires with Baic");
-        }
-        return factory(w, frame);
-      });
+((factory) => {
+
+  if (typeof define === "function" && define.amd) {
+
+    // AMD. Register as an anonymous module.
+    define(["Baic"], factory);
   } else {
-    if (!global.Baic) {
-      throw new Error("fetch requires with Baic");
-    }
-    factory(global, global.Baic);
+
+    // Browser globals
+    factory(window, Baic);
   }
-})(typeof window !== "undefined" ? window : this, (window, Baic, noFrame) => {
+
+})((window, $) => {
   'use strict';
 
   function _normalizeName(name) {
@@ -36,20 +32,19 @@ console.time('fetch');;
   }
 
   function Headers(headers) {
-    var self = this;
-    self.map = {};
+    this.map = {};
     if (headers instanceof Headers) {
-      Baic.each(headers, (value, name) => {
+      $.each(headers, function(value, name) {
         this.append(name, value)
-      })
+      }.bind(this))
     } else if (headers) {
-      Baic.each(Object.getOwnPropertyNames(headers), name => {
-        self.append(name, headers[name])
-      })
+      $.each(Object.getOwnPropertyNames(headers), function(name) {
+        this.append(name, headers[name])
+      }.bind(this))
     }
   }
 
-  Baic.extend(Headers.prototype, {
+  $.extend(Headers.prototype, {
     append(name, value) {
       name = _normalizeName(name)
       value = _normalizeValue(value)
@@ -61,12 +56,11 @@ console.time('fetch');;
       list.push(value)
     },
     forEach(callback) {
-      var self = this;
-      Baic.each(Object.getOwnPropertyNames(self.map), name => {
-        Baic.each(self.map[name], value => {
-          callback.call(self, value, name)
-        })
-      })
+      $.each(Object.getOwnPropertyNames(this.map), function(name) {
+        $.each(this.map[name], function(value) {
+          callback.call(this, value, name)
+        }.bind(this))
+      }.bind(this))
     },
     delete(name) {
       delete this.map[_normalizeName(name)]
@@ -132,7 +126,7 @@ console.time('fetch');;
   function Body() {
     this.bodyUsed = false
 
-    this._initBody = body => {
+    this._initBody = function(body) {
       this._bodyInit = body
       if (typeof body === 'string') {
         this._bodyText = body
@@ -148,10 +142,10 @@ console.time('fetch');;
       } else {
         throw new Error('unsupported BodyInit type')
       }
-    }
+    }.bind(this)
 
     if (support.blob) {
-      this.blob = () => {
+      this.blob = function() {
         var rejected = _consumed(this)
         if (rejected) {
           return rejected
@@ -164,13 +158,13 @@ console.time('fetch');;
         } else {
           return Promise.resolve(new Blob([this._bodyText]))
         }
-      }
+      }.bind(this)
 
-      this.arrayBuffer = () => {
+      this.arrayBuffer = function() {
         return this.blob().then(_readBlobAsArrayBuffer)
-      }
+      }.bind(this)
 
-      this.text = () => {
+      this.text = function() {
         var rejected = _consumed(this)
         if (rejected) {
           return rejected
@@ -183,23 +177,23 @@ console.time('fetch');;
         } else {
           return Promise.resolve(this._bodyText)
         }
-      }
+      }.bind(this)
     } else {
-      this.text = () => {
+      this.text = function() {
         var rejected = _consumed(this)
         return rejected ? rejected : Promise.resolve(this._bodyText)
-      }
+      }.bind(this)
     }
 
     if (support.formData) {
-      this.formData = () => {
+      this.formData = function() {
         return this.text().then(_decode)
-      }
+      }.bind(this)
     }
 
-    this.json = () => {
+    this.json = function() {
       return this.text().then(JSON.parse)
-    }
+    }.bind(this)
 
     return this
   }
@@ -247,7 +241,7 @@ console.time('fetch');;
     this._initBody(body)
   }
 
-  Baic.extend(Request.prototype, {
+  $.extend(Request.prototype, {
     clone() {
       return new Request(this)
     }
@@ -255,7 +249,7 @@ console.time('fetch');;
 
   function _decode(body) {
     var form = new FormData()
-    Baic.each(body.trim().split('&'), bytes => {
+    $.each(body.trim().split('&'), bytes => {
       if (bytes) {
         var split = bytes.split('=')
         var name = split.shift().replace(/\+/g, ' ')
@@ -269,7 +263,7 @@ console.time('fetch');;
   function _headers(xhr) {
     var head = new Headers()
     var pairs = xhr.getAllResponseHeaders().trim().split('\n')
-    Baic.each(pairs, header => {
+    $.each(pairs, header => {
       var split = header.trim().split(':')
       var key = split.shift().trim()
       var value = split.join(':').trim()
@@ -292,7 +286,7 @@ console.time('fetch');;
 
   Body.call(Response.prototype)
 
-  Baic.extend(Response.prototype, {
+  $.extend(Response.prototype, {
     clone() {
       return new Response(this._bodyInit, {
         status: this.status,
@@ -303,7 +297,7 @@ console.time('fetch');;
     }
   })
 
-  Baic.extend(Response, {
+  $.extend(Response, {
     error() {
       var response = new Response(null, {
         status: 0,
@@ -382,7 +376,7 @@ console.time('fetch');;
         xhr.responseType = 'blob'
       }
 
-      Baic.each(request.headers, (value, name) => {
+      $.each(request.headers, (value, name) => {
         xhr.setRequestHeader(name, value)
       })
 
@@ -390,20 +384,10 @@ console.time('fetch');;
     })
   }
 
-  Baic.extend(Fetch, {
+  $.extend(Fetch, {
     polyfill: true
-  })
+  });
 
-  if (typeof define === "function" && define.amd) {
-    define("Fetch", [], () => {
-      return Fetch;
-    });
-  }
-
-  if (typeof noFrame === "undefined") {
-    (Baic.fetch = Fetch) && ("fetch" in window || (window.fetch = Fetch));
-  }
-
-  return Fetch;
-})
+  ($.fetch = Fetch) && ("fetch" in window || (window.fetch = Fetch));
+});
 console.timeEnd('fetch');

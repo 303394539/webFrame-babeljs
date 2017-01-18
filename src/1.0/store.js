@@ -1,35 +1,31 @@
 console.time('store');;
-((global, factory) => {
-  if (typeof module === "object" && typeof module.exports === "object") {
-    module.exports = global.Baic ?
-      factory(global, global.Baic) :
-      ((w, frame) => {
-        if (!w.Baic) {
-          throw new Error("store requires with Baic");
-        }
-        return factory(w, frame);
-      });
+((factory) => {
+  
+  if (typeof define === "function" && define.amd) {
+
+    // AMD. Register as an anonymous module.
+    define(["Baic"], factory);
   } else {
-    if (!global.Baic) {
-      throw new Error("store requires with Baic");
-    }
-    factory(global, global.Baic);
+
+    // Browser globals
+    factory(window, window.document, Baic);
   }
-})(typeof window !== "undefined" ? window : this, (window, Baic) => {
+
+})((window, document, $) => {
   'use strict';
 
   var _isValidKey = new RegExp("^[^\\x00-\\x20\\x7f\\(\\)<>@,;:\\\\\\\"\\[\\]\\?=\\{\\}\\/\\u0080-\\uffff]+\x24");
 
-  Baic.extend({
+  $.extend({
     storage: {
       set(key, value, expires) {
         if (_isValidKey.test(key)) {
-          if (Baic.isObject(value)) {
-            value = "@" + Baic.toStr(value);
+          if ($.isObject(value)) {
+            value = "@" + $.toStr(value);
           }
           window.localStorage.setItem(key, value);
           if (expires) {
-            if (Baic.isNumber(expires)) {
+            if ($.isNumber(expires)) {
               expires = date.setTime(Date.now() + expires);
             }
             window.localStorage.setItem(key + ".expires", expires);
@@ -73,7 +69,7 @@ console.time('store');;
           if (result) {
             result = result[2] || null;
           }
-          if (Baic.isString(result)) {
+          if ($.isString(result)) {
             return decodeURIComponent(result);
           }
         }
@@ -81,12 +77,12 @@ console.time('store');;
       },
       set(key, value, expires) {
         if (_isValidKey.test(key)) {
-          if (Baic.isNumber(expires)) {
+          if ($.isNumber(expires)) {
             expires = ";expires=" + new Date(Date.now() + expires * 1000).toGMTString();
           } else {
             expires = "";
           }
-          document.cookie = encodeURIComponent(key) + '=' + encodeURIComponent(Baic.toStr(value)) + expires;
+          document.cookie = encodeURIComponent(key) + '=' + encodeURIComponent($.toStr(value)) + expires;
         }
       },
       remove(key) {
@@ -98,17 +94,9 @@ console.time('store');;
         }
       },
       clearAll() {
-        Baic.each((document.cookie.match(/[^ =;]+(?=\=)/g) || []), Baic.cookie.remove.bind(this));
+        $.each((document.cookie.match(/[^ =;]+(?=\=)/g) || []), $.cookie.remove.bind(this));
       }
     }
   });
-
-  if (typeof define === "function" && define.amd) {
-    define("Baic", [], () => {
-      return Baic;
-    });
-  }
-
-  return Baic;
-})
+});
 console.timeEnd('store');

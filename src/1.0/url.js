@@ -1,21 +1,17 @@
 console.time('url');;
-((global, factory) => {
-  if (typeof module === "object" && typeof module.exports === "object") {
-    module.exports = global.Baic ?
-      factory(global, global.Baic, true) :
-      ((w, frame) => {
-        if (!w.Baic) {
-          throw new Error("url requires with Baic");
-        }
-        return factory(w, frame);
-      });
+((factory) => {
+
+  if (typeof define === "function" && define.amd) {
+
+    // AMD. Register as an anonymous module.
+    define(["Baic"], factory);
   } else {
-    if (!global.Baic) {
-      throw new Error("url requires with Baic");
-    }
-    factory(global, global.Baic);
+
+    // Browser globals
+    factory(window, Baic);
   }
-})(typeof window !== "undefined" ? window : this, (window, Baic, noFrame) => {
+
+})((window, $) => {
   'use strict';
 
   var Url = {
@@ -29,11 +25,11 @@ console.time('url');;
       return url + Url.query(query, url.indexOf("?") >= 0 ? "&" : "?");
     },
     query(obj, prefix = "") {
-      if (Baic.isJSON(obj)) {
+      if ($.isJSON(obj)) {
         var serialize = prefix;
         var key;
         for (key in obj) {
-          if (!Baic.isUndefined(key) && Baic.hasOwn(obj, key)) {
+          if (!$.isUndefined(key) && $.hasOwn(obj, key)) {
             if (serialize !== prefix) {
               serialize += '&'
             }
@@ -46,7 +42,7 @@ console.time('url');;
         var isUrl = /^(https?\:\/\/|\.\/|\.\.\/)/i.test(obj);
         var search = location.search.slice(1);
         var parts, part;
-        Baic.each((isUrl ? obj.split('?')[1] : search).split('&'), item => {
+        $.each((isUrl ? obj.split('?')[1] : search).split('&'), item => {
           parts = item.split('=');
           if (parts[0]) {
             part = Url.decode(parts[1]);
@@ -58,16 +54,7 @@ console.time('url');;
     }
   }
 
-  if (typeof define === "function" && define.amd) {
-    define("Url", [], () => {
-      return Url;
-    });
-  }
+  $.url = Url;
 
-  if (typeof noFrame === "undefined") {
-    Baic.url = Url;
-  }
-
-  return Url;
-})
+});
 console.timeEnd('url');

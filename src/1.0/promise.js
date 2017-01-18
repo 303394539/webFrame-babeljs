@@ -1,21 +1,17 @@
 console.time('promise');;
-((global, factory) => {
-  if (typeof module === "object" && typeof module.exports === "object") {
-    module.exports = global.Baic ?
-      factory(global, global.Baic, true) :
-      ((w, frame) => {
-        if (!w.Baic) {
-          throw new Error("promise requires with Baic");
-        }
-        return factory(w, frame);
-      });
+((factory) => {
+  
+  if (typeof define === "function" && define.amd) {
+
+    // AMD. Register as an anonymous module.
+    define(["Baic"], factory);
   } else {
-    if (!global.Baic) {
-      throw new Error("promise requires with Baic");
-    }
-    factory(global, global.Baic);
+
+    // Browser globals
+    factory(window, window.document, Baic);
   }
-})(typeof window !== "undefined" ? window : this, (window, Baic, noFrame) => {
+
+})((window, document, $) => {
   'use strict';
 
   var async = (function(require) {
@@ -174,7 +170,7 @@ console.time('promise');;
 
   var makePromise = (function() {
 
-    return makePromise = environment => {
+    return function(environment) {
 
       var tasks = environment.scheduler;
       var emitRejection = initEmitRejection();
@@ -1091,16 +1087,7 @@ console.time('promise');;
     scheduler: new Scheduler(async.asap)
   });
 
-  if (typeof define === "function" && define.amd) {
-    define("Promise", [], () => {
-      return Promise;
-    });
-  }
+  ($.Promise = Promise) && ("Promise" in window || (window.Promise = Promise));
 
-  if (typeof noFrame === "undefined") {
-    (Baic.Promise = Promise) && ("Promise" in window || (window.Promise = Promise));
-  }
-
-  return Promise;
-})
+});
 console.timeEnd('promise');

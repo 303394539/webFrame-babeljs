@@ -1,21 +1,17 @@
 console.time('require');;
-((global, factory) => {
-  if (typeof module === "object" && typeof module.exports === "object") {
-    module.exports = global.Baic ?
-      factory(global, global.Baic, true) :
-      ((w, frame) => {
-        if (!w.Baic) {
-          throw new Error("require requires with Baic");
-        }
-        return factory(w, frame);
-      });
+((factory) => {
+  
+  if (typeof define === "function" && define.amd) {
+
+    // AMD. Register as an anonymous module.
+    define(["Baic"], factory);
   } else {
-    if (!global.Baic) {
-      throw new Error("require requires with Baic");
-    }
-    factory(global, global.Baic);
+
+    // Browser globals
+    factory(window, window.document, Baic);
   }
-})(typeof window !== "undefined" ? window : this, (window, Baic, noFrame) => {
+
+})((window, document, $) => {
   'use strict';
 
   var EXP_READY = /complete|loaded|interactive/,
@@ -132,7 +128,7 @@ console.time('require');;
   }
 
   var Require = function(arr) {
-    if(!Baic.isArray(arr)){
+    if(!$.isArray(arr)){
       arr = [arr];
     }
     return new Promise(resolve => {
@@ -159,7 +155,7 @@ console.time('require');;
         setTimeout(_DOMLoaded, 100)
       }
     }).then(() => {
-      return Promise.all(Baic.map(arr, item => {
+      return Promise.all($.map(arr, item => {
         return item ? _load(item) : Promise.resolve();
       }))
     });
@@ -172,11 +168,11 @@ console.time('require');;
     if (script.hasAttribute("data-require")) {
       main = script.getAttribute("data-require");
       if (main) {
-        Baic.each(main.split(';'), item => {
+        $.each(main.split(';'), item => {
           if (item.indexOf(",") < 0) {
             Require(item)
           } else {
-            Baic.each(item.split(','), item => {
+            $.each(item.split(','), item => {
               Require(item)
             })
           }
@@ -185,20 +181,11 @@ console.time('require');;
       break;
     }
   };
-  Baic.extend(Require, {
+  $.extend(Require, {
     baseUrl: baseUrl
   })
 
-  if (typeof define === "function" && define.amd) {
-    define("Require", [], () => {
-      return Require;
-    });
-  }
+  window.require = $.require = Require;
 
-  if (typeof noFrame === "undefined") {
-    window.require = Baic.require = Require;
-  }
-
-  return Require;
-})
+});
 console.timeEnd('require');

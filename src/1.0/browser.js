@@ -1,21 +1,17 @@
 console.time('browser');;
-((global, factory) => {
-  if (typeof module === "object" && typeof module.exports === "object") {
-    module.exports = global.Baic ?
-      factory(global, global.Baic, true) :
-      ((w, frame) => {
-        if (!w.Baic) {
-          throw new Error("browser requires with Baic");
-        }
-        return factory(w, frame);
-      });
+((factory) => {
+  
+  if (typeof define === "function" && define.amd) {
+
+    // AMD. Register as an anonymous module.
+    define(["Baic"], factory);
   } else {
-    if (!global.Baic) {
-      throw new Error("browser requires with Baic");
-    }
-    factory(global, global.Baic);
+
+    // Browser globals
+    factory(window, Baic);
   }
-})(typeof window !== "undefined" ? window : this, (window, Baic, noFrame) => {
+
+})((window, $) => {
   'use strict';
 
   var _userAgent = window.navigator.userAgent.toLowerCase(),
@@ -58,16 +54,6 @@ console.time('browser');;
     }
   })();
 
-  if (typeof define === "function" && define.amd) {
-    define("Browser", [], () => {
-      return Browser;
-    });
-  }
-
-  if (typeof noFrame === "undefined") {
-    Baic.browser = Browser;
-  }
-
-  return Browser;
-})
+  $.browser = Browser;
+});
 console.timeEnd('browser');

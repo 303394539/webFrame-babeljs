@@ -1,21 +1,17 @@
 console.time('touch');;
-((global, factory) => {
-  if (typeof module === "object" && typeof module.exports === "object") {
-    module.exports = global.Baic ?
-      factory(global, global.Baic) :
-      ((w, frame) => {
-        if (!w.Baic) {
-          throw new Error("touch requires with Baic");
-        }
-        return factory(w, frame);
-      });
+((factory) => {
+  
+  if (typeof define === "function" && define.amd) {
+
+    // AMD. Register as an anonymous module.
+    define(["Baic"], factory);
   } else {
-    if (!global.Baic) {
-      throw new Error("touch requires with Baic");
-    }
-    factory(global, global.Baic);
+
+    // Browser globals
+    factory(window, window.document, Baic);
   }
-})(typeof window !== "undefined" ? window : this, (window, Baic) => {
+
+})((window, document, $) => {
   'use strict';
 
   var EVENT;
@@ -35,20 +31,20 @@ console.time('touch');;
     firstTouch = [],
     lastTouch = [];
 
-  Baic.each(TOUCH_EVENTS, eventName => {
-    Baic.fn[eventName] = function(callback) {
+  $.each(TOUCH_EVENTS, eventName => {
+    $.fn[eventName] = function(callback) {
       this.on(eventName, callback);
     }
   });
 
-  Baic.extend({
+  $.extend({
     setEventOptions(opts) {
-      Baic.extend(EVENT_OPTIONS, opts, true);
+      $.extend(EVENT_OPTIONS, opts, true);
     }
   });
 
-  Baic(() => {
-    Baic(document).on('touchstart', _onTouchStart)
+  $(() => {
+    $(document).on('touchstart', _onTouchStart)
       .on('touchmove', _onTouchMove)
       .on('touchend', _onTouchEnd)
       .on('touchcancel', _cleanTouch);
@@ -63,7 +59,7 @@ console.time('touch');;
     var difftime = now - (touch.lasttime || now);
     var touches = _getTouches(event);
     var eventCount = touches.length;
-    var target = Baic(_getTarget(touches[0].target));
+    var target = $(_getTarget(touches[0].target));
 
     firstTouch = _touchesPosition(touches, eventCount);
 
@@ -124,9 +120,9 @@ console.time('touch');;
       if (touch.enabled) {
         longTapTimeout && longTapTimeout.cancel();
         if (touch.tapCount === 1) {
-          Baic.browser.mobile && _trigger('tap');
+          $.browser.mobile && _trigger('tap');
           singleTapTimeout = _triggerSingleTap.defer(EVENT_OPTIONS.singleDelay);
-        } else if (touch.tapCount === 2 && touch.gap && Baic.browser.mobile) {
+        } else if (touch.tapCount === 2 && touch.gap && $.browser.mobile) {
           _trigger('doubleTap');
           _cleanTouch();
         }
@@ -163,13 +159,13 @@ console.time('touch');;
 
   function _trigger(type, params) {
     if (touch.el) {
-      params = Baic.extend(params, {
+      params = $.extend(params, {
         starttime: touch.lasttime,
         dx: touch.dx,
         dy: touch.dy
       });
 
-      Baic.each(EVENT_ATTRIBUTE, item => {
+      $.each(EVENT_ATTRIBUTE, item => {
         params[item] = EVENT.type === 'touchend' &&
           EVENT.changedTouches && EVENT.changedTouches[0] &&
           EVENT.changedTouches[0][item] ||
@@ -237,13 +233,5 @@ console.time('touch');;
       });
     }
   }
-
-  if (typeof define === "function" && define.amd) {
-    define("Baic", [], () => {
-      return Baic;
-    });
-  }
-
-  return Baic;
-})
+});
 console.timeEnd('touch');

@@ -1,24 +1,20 @@
 console.time('core');;
-(((global, factory) => {
+(((factory) => {
 
-	if (typeof module === "object" && typeof module.exports === "object") {
-		module.exports = global.document ?
-			factory(global, true) :
-			(w => {
-				if (!w.document) {
-					throw new Error("Baic requires a window with a document");
-				}
-				return factory(w);
-			});
+	if (typeof define === "function" && define.amd) {
+
+		// AMD. Register as an anonymous module.
+		define(["Baic"], factory);
 	} else {
-		factory(global);
+
+		// Browser globals
+		factory(window, window.document);
 	}
 
-})(typeof window !== "undefined" ? window : this, (window, noGlobal) => {
+})((window, document) => {
 	'use strict';
 
-	var document = window.document,
-		OBJECT_PROTOTYPE = Object.prototype,
+	var OBJECT_PROTOTYPE = Object.prototype,
 		ARRAY_PROTOTYPE = Array.prototype,
 		FUNCTION_PROTOTYPE = Function.prototype,
 		STRING_PROTOTYPE = String.prototype,
@@ -174,13 +170,13 @@ console.time('core');;
 			if (!fn || !Baic.isFunction(fn)) {
 				return Promise.reject();
 			}
-			return new Promise(((resolve, reject) => {
+			return new Promise(function(resolve, reject) {
 				try {
 					resolve(fn.call(this));
 				} catch (e) {
 					reject(e);
 				}
-			}).bind(this))
+			}.bind(this))
 		},
 		hasOwn(object, property) {
 			return OBJECT_PROTOTYPE.hasOwnProperty.call(object, property);
@@ -200,6 +196,9 @@ console.time('core');;
 		isNull: _checktype("null"),
 		isWindow(obj) {
 			return obj != null && obj === obj.window;
+		},
+		isDocument(obj) {
+			return obj != null && obj.nodeType == 9;
 		},
 		isUndefined: _checktype("undefined"),
 		isObject: _checktype("object"),
@@ -231,7 +230,7 @@ console.time('core');;
 			}
 		},
 		getWindow(obj) {
-			return Baic.isWindow(obj) ? obj : obj.nodeType === 9 && obj.defaultView;
+			return Baic.isWindow(obj) ? obj : $.isDocument(obj) && obj.defaultView;
 		},
 		ready(callback) {
 			return new Promise(resolve => {
@@ -463,17 +462,7 @@ console.time('core');;
 		}
 	});
 
-	if (typeof define === "function" && define.amd) {
-		define("Baic", [], () => {
-			return Baic;
-		});
-	}
-
-	if (typeof noGlobal === "undefined") {
-		(window.Baic = window.b = Baic) && ("$" in window || (window.$ = Baic));
-	}
-
-	return Baic;
+	window.Baic = window.b = Baic;
 
 }));
 console.timeEnd('core');

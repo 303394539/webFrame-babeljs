@@ -1,21 +1,17 @@
 console.time('event');;
-((global, factory) => {
-  if (typeof module === "object" && typeof module.exports === "object") {
-    module.exports = global.Baic ?
-      factory(global, global.Baic) :
-      ((w, frame) => {
-        if (!w.Baic) {
-          throw new Error("event requires with Baic");
-        }
-        return factory(w, frame);
-      });
+((factory) => {
+  
+  if (typeof define === "function" && define.amd) {
+
+    // AMD. Register as an anonymous module.
+    define(["Baic"], factory);
   } else {
-    if (!global.Baic) {
-      throw new Error("event requires with Baic");
-    }
-    factory(global, global.Baic);
+
+    // Browser globals
+    factory(window, window.document, Baic);
   }
-})(typeof window !== "undefined" ? window : this, (window, Baic) => {
+
+})((window, document, $) => {
   'use strict';
 
   var _EVENTS_PC = {
@@ -28,19 +24,19 @@ console.time('event');;
   };
   var _HANDLERS = {};
 
-  Baic.extend({
+  $.extend({
     createEvent(type, options) {
       var event = document.createEvent('Events');
       event.initEvent(_getEventName(type), true, true, null, null, null,
         null, null, null, null, null, null, null, null, null);
       if (options) {
-        Baic.extend(true, event, options);
+        $.extend(true, event, options);
       }
       return event;
     },
     addEventListener(element, eventName, callback, bool) {
       if (element.addEventListener) {
-        element.addEventListener(eventName, callback, Baic.isUndefined(bool) ? false : bool);
+        element.addEventListener(eventName, callback, $.isUndefined(bool) ? false : bool);
       } else if (element.attachEvent) {
         element.attachEvent('on' + eventName, callback);
       } else {
@@ -49,7 +45,7 @@ console.time('event');;
     },
     removeEventListener(element, eventName, callback, bool) {
       if (element.removeEventListener) {
-        element.removeEventListener(eventName, callback, Baic.isUndefined(bool) ? false : bool);
+        element.removeEventListener(eventName, callback, $.isUndefined(bool) ? false : bool);
       } else if (element.detachEvent) {
         element.detachEvent('on' + eventName, callback);
       } else {
@@ -58,11 +54,11 @@ console.time('event');;
     }
   });
 
-  Baic.extend(Baic.fn, {
+  $.extend($.fn, {
     on(eventName, callback, bool) {
       var event = _getEventName(eventName);
-      Baic.each(this, item => {
-        var id = Baic.id(item);
+      $.each(this, item => {
+        var id = $.id(item);
         var elementHandlers = _HANDLERS[id] || (_HANDLERS[id] = []);
         var handler = {
           event: event,
@@ -72,31 +68,31 @@ console.time('event');;
         };
         elementHandlers.push(handler);
 
-        Baic.addEventListener(item, handler.event, handler.proxy, bool);
+        $.addEventListener(item, handler.event, handler.proxy, bool);
       });
       return this;
     },
     off(eventName, callback, bool) {
       var event = _getEventName(eventName);
-      Baic.each(this, item => {
-        var id = Baic.id(item);
-        Baic.each((_HANDLERS[id] || []), handler => {
+      $.each(this, item => {
+        var id = $.id(item);
+        $.each((_HANDLERS[id] || []), handler => {
           if (handler && (!event || handler.event === event) && (!callback || handler.callback === callback)) {
             delete _HANDLERS[id][handler.index];
-            Baic.removeEventListener(item, handler.event, handler.proxy, bool);
+            $.removeEventListener(item, handler.event, handler.proxy, bool);
           }
         });
       });
       return this;
     },
     trigger(event, options, srcEvent) {
-      if (Baic.isString(event)) {
-        event = Baic.createEvent(event, options);
+      if ($.isString(event)) {
+        event = $.createEvent(event, options);
       }
-      if (!Baic.isNull(srcEvent)) {
+      if (!$.isNull(srcEvent)) {
         event.srcEvent = srcEvent;
       }
-      Baic.each(this, item => {
+      $.each(this, item => {
         item.dispatchEvent(event);
       });
       return this;
@@ -105,7 +101,7 @@ console.time('event');;
 
   function _getEventName(eventName) {
     eventName = eventName.toLowerCase();
-    return (Baic.browser.mobile ? eventName : _EVENTS_PC[eventName]) || eventName;
+    return ($.browser.mobile ? eventName : _EVENTS_PC[eventName]) || eventName;
   }
 
   function _createProxyCallback(callback, element) {
@@ -119,12 +115,5 @@ console.time('event');;
     })
   }
 
-  if (typeof define === "function" && define.amd) {
-    define("Baic", [], () => {
-      return Baic;
-    });
-  }
-
-  return Baic;
-})
+});
 console.timeEnd('event');

@@ -1,38 +1,34 @@
 console.time('dom');;
-((global, factory) => {
-  if (typeof module === "object" && typeof module.exports === "object") {
-    module.exports = global.Baic ?
-      factory(global, global.Baic) :
-      ((w, frame) => {
-        if (!w.Baic) {
-          throw new Error("dom requires with Baic");
-        }
-        return factory(w, frame);
-      });
+((factory) => {
+
+  if (typeof define === "function" && define.amd) {
+
+    // AMD. Register as an anonymous module.
+    define(["Baic"], factory);
   } else {
-    if (!global.Baic) {
-      throw new Error("dom requires with Baic");
-    }
-    factory(global, global.Baic);
+
+    // Browser globals
+    factory(window.document, Baic);
   }
-})(typeof window !== "undefined" ? window : this, (window, Baic) => {
+
+})((document, $) => {
   'use strict';
 
   var EVENT_PREFIX = /^on[A-Z]/,
     ELEMENT_ID = 1;
 
-  Baic.extend(Baic.fn, {
+  $.extend($.fn, {
     html(value) {
-      if (Baic.isUndefined(value)) {
+      if ($.isUndefined(value)) {
         return this[0].innerHTML;
       } else {
-        Baic.each(this, item => {
-          if (Baic.isString(value) || Baic.isNumber(value)) {
+        $.each(this, item => {
+          if ($.isString(value) || $.isNumber(value)) {
             item.innerHTML = value;
           } else {
             item.innerHTML = null;
-            if (Baic.isArray(value)) {
-              Baic.each(value, dom => {
+            if ($.isArray(value)) {
+              $.each(value, dom => {
                 if (dom.nodeType) {
                   item.appendChild(dom);
                 } else {
@@ -48,62 +44,72 @@ console.time('dom');;
       return this;
     },
     text(value) {
-      if (Baic.isUndefined(value)) {
+      if ($.isUndefined(value)) {
         return this[0].textContent;
       } else {
-        Baic.each(this, item => {
-          item.textContent = Baic.toStr(value);
+        $.each(this, item => {
+          item.textContent = $.toStr(value);
         });
       }
       return this;
     },
     empty() {
-      Baic.each(this, item => {
+      $.each(this, item => {
         item.innerHTML = null;
       });
       return this;
     },
     remove() {
-      Baic.each(this, item => {
+      $.each(this, item => {
         item.remove();
       })
     },
     attr(name, value) {
-      if (Baic.isUndefined(value)) {
-        if (Baic.isString(name)) {
+      if ($.isUndefined(value)) {
+        if ($.isString(name)) {
           return this[0].getAttribute(name);
-        } else if (Baic.isJSON(name)) {
-          Baic.each(name, ((v, k) => {
+        } else if ($.isJSON(name)) {
+          $.each(name, function(v, k) {
             this.attr(k, v);
-          }).bind(this));
+          }.bind(this));
         }
       } else {
-        Baic.each(this, item => {
-          item.setAttribute(name, Baic.toStr(value));
+        $.each(this, item => {
+          item.setAttribute(name, $.toStr(value));
         });
       }
       return this;
     },
     removeAttr(name) {
-      Baic.each(this, (item => {
-        if (Baic.isArray(name)) {
-          Baic.each(name, (value => {
+      $.each(this, function(item) {
+        if ($.isArray(name)) {
+          $.each(name, function(value) {
             this.removeAttr(value);
-          }).bind(this));
+          }.bind(this));
         } else {
           item.removeAttribute(name);
         }
-      }).bind(this));
+      }.bind(this));
       return this;
     },
     data(name, value) {
+      var element = this[0];
       //利用html5特性dataset,大量dom操作dataset性能不太好,限制在10个元素以内
+      if ($.isUndefined(name)) {
+        var result = {};
+        $.each(element.attributes, function(attr) {
+          if (attr.name.indexOf('data-') == 0) {
+            result[attr.name.slice(5)] = attr.value
+          }
+        })
+        return result;
+      }
       if (this.length <= 10 && this[0].dataset) {
-        if (Baic.isUndefined(value)) {
+        if ($.isUndefined(value)) {
           return this[0].dataset[name];
         } else {
-          Baic.each(this, item => {
-            item.dataset[name] = Baic.toStr(value);
+          $.each(this, item => {
+            item.dataset[name] = $.toStr(value);
           });
           return this;
         }
@@ -115,11 +121,11 @@ console.time('dom');;
       return this.removeAttr("data-" + name);
     },
     val(value) {
-      if (Baic.isUndefined(value)) {
+      if ($.isUndefined(value)) {
         return this[0].value;
       } else {
-        Baic.each(this, item => {
-          item.value = Baic.toStr(value);
+        $.each(this, item => {
+          item.value = $.toStr(value);
         });
       }
       return this;
@@ -128,7 +134,7 @@ console.time('dom');;
       return _hasClass(this[0], name);
     },
     addClass(name) {
-      Baic.each(this, item => {
+      $.each(this, item => {
         if (!_hasClass(item, name)) {
           if (item.classList) {
             item.classList.add(name);
@@ -140,7 +146,7 @@ console.time('dom');;
       return this;
     },
     removeClass(name) {
-      Baic.each(this, item => {
+      $.each(this, item => {
         if (name == item.className) {
           item.className = "";
         } else {
@@ -158,28 +164,28 @@ console.time('dom');;
       return this;
     },
     css(name, value) {
-      if (Baic.isUndefined(value)) {
-        if (Baic.isJSON(name)) {
-          Baic.each(name, ((value, key) => {
+      if ($.isUndefined(value)) {
+        if ($.isJSON(name)) {
+          $.each(name, function(value, key) {
             this.css(key, value);
-          }).bind(this));
+          }.bind(this));
         } else {
           return this[0].style[name] || document.defaultView.getComputedStyle(this[0], '')[name];
         }
       } else {
-        Baic.each(this, item => {
-          item.style[name] = Baic.toStr(value);
+        $.each(this, item => {
+          item.style[name] = $.toStr(value);
         });
       }
       return this;
     },
     vendor(name, value, oppo) {
-      var len = Baic.VENDORS.length,
+      var len = $.VENDORS.length,
         newname, newvalue, vendor, result;
       for (var i = 0; i < len; i++) {
-        vendor = Baic.VENDORS[i];
+        vendor = $.VENDORS[i];
         newname = vendor + name;
-        if (!Baic.isUndefined(value) && !Baic.isNull(value)) {
+        if (!$.isUndefined(value) && !$.isNull(value)) {
           if (!oppo) {
             this.css(newname, value);
           } else {
@@ -195,19 +201,61 @@ console.time('dom');;
     rect() {
       return this[0].getBoundingClientRect();
     },
-    width() {
-      return this.rect().width;
+    width(value) {
+      var element = this[0];
+      if ($.isUndefined(value)) {
+        if ($.isWindow(element)) {
+          return this[0].document.documentElement.clientWidth;
+        }
+        if (element.nodeType == 9) {
+          var doc = element.documentElement;
+          return Math.max(
+            element.body.scrollWidth, doc.scrollWidth,
+            element.body.offsetWidth, doc.offsetWidth,
+            doc.clientWidth
+          );
+        }
+        return this.rect().width;
+      } else {
+        this.css('width', value);
+      }
+      return this;
     },
-    height() {
-      return this.rect().height;
+    height(value) {
+      var element = this[0];
+      if ($.isUndefined(value)) {
+        if ($.isWindow(element)) {
+          return this[0].document.documentElement.clientHeight;
+        }
+        if ($.isDocument(element)) {
+          var doc = element.documentElement;
+          return Math.max(
+            element.body.scrollHeight, doc.scrollHeight,
+            element.body.offsetHeight, doc.offsetHeight,
+            doc.clientHeight
+          );
+        }
+        return this.rect().height;
+      } else {
+        this.css('height', value);
+      }
+      return this;
     },
     offset() {
+      var element = this[0]
+      if ($.isWindow(element) || $.isDocument(element)) {
+        return {
+          left: 0,
+          top: 0,
+          width: this.width(),
+          height: this.height()
+        }
+      }
       var rect = this.rect(),
-        dom = this[0],
-        doc = dom && dom.ownerDocument;
+        doc = element && element.ownerDocument;
       if (!doc) return;
       var docElem = doc.documentElement,
-        win = Baic.getWindow(doc);
+        win = $.getWindow(doc);
       return {
         left: rect.left + win.pageXOffset - docElem.clientLeft,
         top: rect.top + win.pageYOffset - docElem.clientTop,
@@ -229,8 +277,8 @@ console.time('dom');;
       return this;
     },
     id(index) {
-      return (Baic.isNumber(index) && index < this.length) ? (this[0].id = Baic.id()) : Baic.map(this, item => {
-        return item.id || (item.id = Baic.id());
+      return ($.isNumber(index) && index < this.length) ? (this[0].id = $.id()) : $.map(this, item => {
+        return item.id || (item.id = $.id());
       });
     }
   });
@@ -255,11 +303,11 @@ console.time('dom');;
         }
       }
 
-      Baic.each(this, item => {
-        if (Baic.isString(value) || Baic.isNumber(value)) {
+      $.each(this, item => {
+        if ($.isString(value) || $.isNumber(value)) {
           item.insertAdjacentHTML(mode ? (mode === 2 ? 'beforeBegin' : 'afterBegin') : 'beforeEnd', value);
-        } else if (Baic.isArray(value)) {
-          Baic.each(value, value => {
+        } else if ($.isArray(value)) {
+          $.each(value, value => {
             method(item, value);
           });
         } else {
@@ -275,17 +323,17 @@ console.time('dom');;
 
   function _createElements(elements, parentNode) {
     var nodes = [];
-    var type = Baic.type(elements);
+    var type = $.type(elements);
 
     var vendor = (property, value) => {
-      return Baic.map(Baic.VENDORS, item => {
+      return $.map($.VENDORS, item => {
         return item + property + ':' + value
       }).join(';');
     };
 
     var processB = q => {
       if (parentNode) {
-        Baic(parentNode).append(q)
+        $(parentNode).append(q)
       }
       return q;
     }
@@ -300,21 +348,21 @@ console.time('dom');;
       return nodes;
     }
 
-    Baic.each(elements, properties => {
+    $.each(elements, properties => {
       if (properties) {
         if (properties.isB) {
           return processB(properties)
         }
 
         var element
-        if (Baic.isString(properties)) {
+        if ($.isString(properties)) {
           element = document.createTextNode(properties)
         } else {
           element = document.createElement(properties.tag || 'div');
           var styles = [];
           var property, value;
           for (property in properties)
-            if (Baic.hasOwn(properties, property)) {
+            if ($.hasOwn(properties, property)) {
               value = properties[property];
               switch (property) {
                 case 'tag':
@@ -354,17 +402,17 @@ console.time('dom');;
                 case 'left':
                 case 'right':
                   styles.push(property + ':' +
-                    (Baic.isString(value) ? value : (+value + 'px')));
+                    ($.isString(value) ? value : (+value + 'px')));
                   break;
 
                 default:
-                  if (EVENT_PREFIX.test(property) && Baic.isFunction(value)) {
-                    Baic(element).on(property[2].toLowerCase() + property.slice(3),
+                  if (EVENT_PREFIX.test(property) && $.isFunction(value)) {
+                    $(element).on(property[2].toLowerCase() + property.slice(3),
                       value);
                   } else if (value != null) {
                     element.setAttribute(property.replace(/[A-Z]/g, obj => {
                       return '-' + obj.toLowerCase();
-                    }), Baic.toStr(value));
+                    }), $.toStr(value));
                   }
               }
             }
@@ -390,40 +438,32 @@ console.time('dom');;
   }
 
   function _createBaicElements(elements, parentNode) {
-    if (Baic.isString(parentNode)) {
-      parentNode = Baic(parentNode)[0];
-    } else if (Baic.isArray(parentNode)) {
+    if ($.isString(parentNode)) {
+      parentNode = $(parentNode)[0];
+    } else if ($.isArray(parentNode)) {
       parentNode = parentNode[0];
     }
-    return Baic(_createElements(elements, parentNode));
+    return $(_createElements(elements, parentNode));
   }
 
-  Baic.extend({
+  $.extend({
     createElements: _createBaicElements,
     $: _createBaicElements,
     createElementPrepend(obj, parentNode) {
       if (!obj || !parentNode) return null;
-      return (parentNode.isB ? parentNode : Baic(parentNode)).createElementPrepend(obj);
+      return (parentNode.isB ? parentNode : $(parentNode)).createElementPrepend(obj);
     },
     id(element, index) {
       if (element && element.nodeType) {
-        return element.id || (element.id = Baic.id());
-      } else if (Baic.isArray(element)) {
-        return (Baic.isNumber(index) && index < this.length) ? (this[0].id = Baic.id()) : Baic.map(this, item => {
-          return item.id || (item.id = Baic.id());
+        return element.id || (element.id = $.id());
+      } else if ($.isArray(element)) {
+        return ($.isNumber(index) && index < this.length) ? (this[0].id = $.id()) : $.map(this, item => {
+          return item.id || (item.id = $.id());
         });
       } else {
         return '__id_' + ELEMENT_ID++;
       }
     }
   });
-
-  if (typeof define === "function" && define.amd) {
-    define("Baic", [], () => {
-      return Baic;
-    });
-  }
-
-  return Baic;
-})
+});
 console.timeEnd('dom');

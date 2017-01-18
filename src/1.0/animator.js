@@ -1,25 +1,21 @@
 console.time('animator');;
-((global, factory) => {
-  if (typeof module === "object" && typeof module.exports === "object") {
-    module.exports = global.Baic ?
-      factory(global, global.Baic, true) :
-      ((w, frame) => {
-        if (!w.Baic) {
-          throw new Error("Animator requires with Baic");
-        }
-        return factory(w, frame);
-      });
+((factory) => {
+  
+  if (typeof define === "function" && define.amd) {
+
+    // AMD. Register as an anonymous module.
+    define(["Baic"], factory);
   } else {
-    if (!global.Baic) {
-      throw new Error("Animator requires with Baic");
-    }
-    factory(global, global.Baic);
+
+    // Browser globals
+    factory(window, Baic);
   }
-})(typeof window !== "undefined" ? window : this, (window, Baic, noFrame) => {
+
+})((window, $) => {
   'use strict';
 
   var _VENDORS = [];
-  Baic.each(Baic.VENDORS, item => {
+  $.each($.VENDORS, item => {
     _VENDORS.unshift(item.replace(/-/g, ""));
   });
 
@@ -37,12 +33,12 @@ console.time('animator');;
     return fn || clearTimeout;
   })(_VENDORS.length)
 
-  Baic.extend(window, {
+  $.extend(window, {
     requestAnimationFrame: _requestAnimationFrame,
     cancelAnimationFrame: _cancelAnimationFrame
   });
 
-  Baic.extend({
+  $.extend({
     easing: {
       linear(n) {
         return n;
@@ -79,26 +75,29 @@ console.time('animator');;
   });
 
   var Animator = function(options) {
-    Baic.extend(this, {
+    $.extend(this, {
       duration: 350,
       startValue: 0,
       endValue: 1,
       reversed: false,
-      easing: Baic.easing.linear,
-      onStep: Baic.nop,
-      onStop: Baic.nop,
-      onEnd: Baic.nop
+      easing: $.easing.linear,
+      onStep: $.nop,
+      onStop: $.nop,
+      onEnd: $.nop
     }, options);
   }
 
-  Baic.extend(Animator.prototype, {
+  $.extend(Animator.prototype, {
     start() {
-      this.stop();
+      return new Promise(function(resolve) {
+        this._resolve = resolve;
+        this.stop();
 
-      this.starttime = this.frametime = Date.now();
-      this.value = this.startValue;
+        this.starttime = this.frametime = Date.now();
+        this.value = this.startValue;
 
-      this._Animation = _requestAnimationFrame(_next.bind(this));
+        this._Animation = _requestAnimationFrame(_next.bind(this));
+      }.bind(this))
     },
     stop() {
       _cancel(this);
@@ -121,6 +120,7 @@ console.time('animator');;
       _cancel(this);
       this.onStep();
       this.onEnd();
+      this._resolve(this);
     } else {
       this._Animation = _requestAnimationFrame(_next.bind(this));
       this.value = this.startValue + num * (this.endValue - this.startValue);
@@ -137,16 +137,7 @@ console.time('animator');;
     }
   }
 
-  if (typeof define === "function" && define.amd) {
-    define("Animator", [], () => {
-      return Animator;
-    });
-  }
+  $.Animator = Animator;
 
-  if (typeof noFrame === "undefined") {
-    Baic.Animator = Animator;
-  }
-
-  return Animator;
-})
+});
 console.timeEnd('animator');

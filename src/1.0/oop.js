@@ -1,21 +1,17 @@
 console.time('oop');;
-((global, factory) => {
-  if (typeof module === "object" && typeof module.exports === "object") {
-    module.exports = global.Baic ?
-      factory(global, global.Baic) :
-      ((w, frame) => {
-        if (!w.Baic) {
-          throw new Error("oop requires with Baic");
-        }
-        return factory(w, frame);
-      });
+((factory) => {
+
+  if (typeof define === "function" && define.amd) {
+
+    // AMD. Register as an anonymous module.
+    define(["Baic"], factory);
   } else {
-    if (!global.Baic) {
-      throw new Error("oop requires with Baic");
-    }
-    factory(global, global.Baic);
+
+    // Browser globals
+    factory(Baic);
   }
-})(typeof window !== "undefined" ? window : this, (window, Baic) => {
+
+})($ => {
   'use strict';
 
   function _extends(obj) {
@@ -26,28 +22,28 @@ console.time('oop');;
     }
     var prototype = new this();
     prototype.__needinit__ = 1;
-    var rtn = (Baic.isFunction(obj) ? obj() : obj) || {};
-    Baic.each(rtn, (value, key) => {
+    var rtn = ($.isFunction(obj) ? obj(Baic) : obj) || {};
+    $.each(rtn, (value, key) => {
       switch (key) {
         case "__superclass__":
         case "__class__":
         case "__needinit__":
           break;
         case "static":
-          Baic.extend(object, value)
+          $.extend(object, value)
           break;
         default:
           prototype[key] = value
       }
     })
-    Baic.extend(prototype, {
+    $.extend(prototype, {
       __superclass__: this,
       __class__: object,
       constructor: object,
-      init: prototype.init || Baic.nop
+      init: prototype.init || $.nop
     })
     object.prototype = prototype
-    Baic.extend(object, {
+    $.extend(object, {
       __superclass__: prototype,
       extends: _extends,
       create() {
@@ -61,13 +57,5 @@ console.time('oop');;
   }
 
   Array.extends = Object.extends = _extends;
-
-  if (typeof define === "function" && define.amd) {
-    define("Baic", [], () => {
-      return Baic;
-    });
-  }
-
-  return Baic;
-})
+});
 console.timeEnd('oop');

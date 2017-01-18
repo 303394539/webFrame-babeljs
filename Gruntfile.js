@@ -47,7 +47,7 @@ module.exports = function(grunt) {
           loops: true,
           drop_console: true
         },
-        mangle: false,
+        mangle: true,
         // sourceMap: true,
         preserveComments: false,
         report: "min",
@@ -71,6 +71,13 @@ module.exports = function(grunt) {
   grunt.loadNpmTasks('grunt-babel');
 
   grunt.registerTask('1.0', [
+    'clean:1.0',
+    'babel:mark',
+    'uglify:1.0',
+    'clean:mark'
+  ]);
+
+  grunt.registerTask('default', [
     'clean:1.0',
     'babel:mark',
     'uglify:1.0',

@@ -1,24 +1,20 @@
 console.time('task');;
-((global, factory) => {
-  if (typeof module === "object" && typeof module.exports === "object") {
-    module.exports = global.Baic ?
-      factory(global, global.Baic) :
-      ((w, frame) => {
-        if (!w.Baic) {
-          throw new Error("task requires with Baic");
-        }
-        return factory(w, frame);
-      });
+((factory) => {
+
+  if (typeof define === "function" && define.amd) {
+
+    // AMD. Register as an anonymous module.
+    define(["Baic"], factory);
   } else {
-    if (!global.Baic) {
-      throw new Error("task requires with Baic");
-    }
-    factory(global, global.Baic);
+
+    // Browser globals
+    factory(Baic);
   }
-})(typeof window !== "undefined" ? window : this, (window, Baic) => {
+
+})($ => {
   'use strict';
 
-  var asap = (() => {
+  var asap = function() {
     // Use the fastest possible means to execute a task in a future turn
     // of the event loop.
 
@@ -79,9 +75,9 @@ console.time('task');;
         requestFlush();
       }
     }
-  }).call(this)
+  }.call(this)
 
-  var _Task = asap => {
+  var _Task = function(asap) {
     this.__asap__ = asap
     return this
   }
@@ -91,7 +87,7 @@ console.time('task');;
   var _async = {};
   var _asyncArgs = {};
 
-  Baic.extend(_Task.prototype, {
+  $.extend(_Task.prototype, {
     scope(fn) {
       if (this.__asap__) {
         asap(fn)
@@ -102,7 +98,7 @@ console.time('task');;
   })
 
   var _runQueue = () => {
-    Baic.each(_queue, (fn, key) => {
+    $.each(_queue, (fn, key) => {
       var args = _queueArgs[key]
       fn.result = fn.apply(args[0], args.slice(1))
     })
@@ -110,7 +106,7 @@ console.time('task');;
   }
 
   var _runAsync = () => {
-    Baic.each(_async, (fn, key) => {
+    $.each(_async, (fn, key) => {
       asap(() => {
         var args = _asyncArgs[key]
         fn.result = fn.apply(args[0], args.slice(1))
@@ -125,7 +121,7 @@ console.time('task');;
     return new _Task(true);
   }
 
-  Baic.extend(_Task, {
+  $.extend(_Task, {
     run: _run,
     runQueue: _runQueue,
     runAsync: _runAsync,
@@ -139,7 +135,7 @@ console.time('task');;
       })
     },
     inject() {
-      var args = Baic.toArray(arguments);
+      var args = $.toArray(arguments);
       var scope = args[0];
       if (!scope) {
         return {}
@@ -171,9 +167,9 @@ console.time('task');;
     }
   })
 
-  Baic.extend(Function.prototype, {
+  $.extend(Function.prototype, {
     queue() {
-      var args = Baic.toArray(arguments)
+      var args = $.toArray(arguments)
       args.unshift(this)
       _queue[_index] = this
       _queueArgs[_index] = args
@@ -183,7 +179,7 @@ console.time('task');;
       return this
     },
     async() {
-      var args = Baic.toArray(arguments)
+      var args = $.toArray(arguments)
       args.unshift(this)
       _async[_index] = this
       _asyncArgs[_index] = args
@@ -193,11 +189,11 @@ console.time('task');;
       return this
     },
     inject() {
-      return _Task.inject.apply(this, [this].concat(Baic.toArray(arguments)))
+      return _Task.inject.apply(this, [this].concat($.toArray(arguments)))
     }
   })
 
-  Baic.extend({
+  $.extend({
     task: _Task,
     runAsyncTask: _runAsync,
     runQueueTask: _runQueue,
@@ -206,13 +202,5 @@ console.time('task');;
       _Task.clean();
     }
   })
-
-  if (typeof define === "function" && define.amd) {
-    define("Baic", [], () => {
-      return Baic;
-    });
-  }
-
-  return Baic;
-})
+});
 console.timeEnd('task');

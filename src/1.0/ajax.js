@@ -1,21 +1,17 @@
 console.time('ajax');;
-((global, factory) => {
-  if (typeof module === "object" && typeof module.exports === "object") {
-    module.exports = global.Baic ?
-      factory(global, global.Baic, true) :
-      ((w, frame) => {
-        if (!w.Baic) {
-          throw new Error("ajax requires with Baic");
-        }
-        return factory(w, frame);
-      });
+((factory) => {
+  
+  if (typeof define === "function" && define.amd) {
+
+    // AMD. Register as an anonymous module.
+    define(["Baic"], factory);
   } else {
-    if (!global.Baic) {
-      throw new Error("ajax requires with Baic");
-    }
-    factory(global, global.Baic);
+
+    // Browser globals
+    factory(window, Baic);
   }
-})(typeof window !== "undefined" ? window : this, (window, Baic, noFrame) => {
+
+})((window, $) => {
   'use strict';
 
   var _AJAX_DEFAULTS = {
@@ -34,8 +30,8 @@ console.time('ajax');;
     // url: '',                // URL
     type: _AJAX_DEFAULTS.TYPE, // 请求方法: GET | POST | PUT | DELETE 等
     async: true, // 是否异步调用
-    success: Baic.nop, // 成功响应的callback函数
-    error: Baic.nop, // 失败或错误的callback函数
+    success: $.nop, // 成功响应的callback函数
+    error: $.nop, // 失败或错误的callback函数
     context: null, // callback函数的上下文对象
     dataType: _AJAX_DEFAULTS.MIME, // 返回数据的类型: json | xml | text
     headers: {}, // 头信息
@@ -49,7 +45,7 @@ console.time('ajax');;
   var abortTimeout;
 
   function _xhrForm(method, url, data, success, dataType) {
-    return Baic.ajax({
+    return $.ajax({
       type: method,
       url: url,
       data: data,
@@ -96,7 +92,7 @@ console.time('ajax');;
   function _parseResponse(xhr, options) {
     var response = xhr.responseText;
     if (response) {
-      if (options.dataType === Baic.AJAX_DEFAULTS.MIME) {
+      if (options.dataType === $.AJAX_DEFAULTS.MIME) {
         try {
           response = JSON.parse(response);
         } catch (error) {
@@ -112,21 +108,21 @@ console.time('ajax');;
 
   var Ajax = options => {
     return new Promise((resolve, reject) => {
-      options = Baic.extend({
+      options = $.extend({
         _resolve: resolve,
         _reject: reject
-      }, Baic.AJAX_OPTIONS, options);
+      }, $.AJAX_OPTIONS, options);
       var xhr = options.xhr();
       if (options.data) {
-        if (options.type === Baic.AJAX_DEFAULTS.TYPE) {
-          options.url += Baic.url.query(options.data, options.url.indexOf('?') < 0 ? '?' : '&');
+        if (options.type === $.AJAX_DEFAULTS.TYPE) {
+          options.url += $.url.query(options.data, options.url.indexOf('?') < 0 ? '?' : '&');
         } else {
-          options.data = Baic.url.query(options.data);
+          options.data = $.url.query(options.data);
         }
       }
 
       if (options.url.indexOf("=?") >= 0) {
-        return Baic.jsonp(options);
+        return $.jsonp(options);
       }
 
       xhr.onreadystatechange = () => {
@@ -142,11 +138,11 @@ console.time('ajax');;
         options.headers['Content-Type'] = options.contentType;
       }
       if (options.dataType) {
-        options.headers['Accept'] = Baic.AJAX_MIME_TYPES[options.dataType];
+        options.headers['Accept'] = $.AJAX_MIME_TYPES[options.dataType];
       }
 
       for (var key in options.headers) {
-        if (Baic.hasOwn(options.headers, key)) {
+        if ($.hasOwn(options.headers, key)) {
           xhr.setRequestHeader(key, options.headers[key]);
         }
       }
@@ -163,97 +159,88 @@ console.time('ajax');;
     });
   }
 
-  if (typeof define === "function" && define.amd) {
-    define("Ajax", [], () => {
-      return Ajax;
-    });
-  }
-
-  if (typeof noGlobal === "undefined") {
-    Baic.extend({
-      AJAX_DEFAULTS: _AJAX_DEFAULTS,
-      AJAX_OPTIONS: _AJAX_OPTIONS,
-      AJAX_MIME_TYPES: _AJAX_MIME_TYPES,
-      ajax: Ajax,
-      jsonp(options) {
-        if (options.async) {
-          var callbackName = "jsonp" + (++JSONP_ID);
-          var script = document.createElement("script");
-          var xhr = {
-            abort() {
-              Baic(script).remove();
-              if (callbackName in window) {
-                delete window[callbackName];
-              }
+  $.extend({
+    AJAX_DEFAULTS: _AJAX_DEFAULTS,
+    AJAX_OPTIONS: _AJAX_OPTIONS,
+    AJAX_MIME_TYPES: _AJAX_MIME_TYPES,
+    ajax: Ajax,
+    jsonp(options) {
+      if (options.async) {
+        var callbackName = "jsonp" + (++JSONP_ID);
+        var script = document.createElement("script");
+        var xhr = {
+          abort() {
+            $(script).remove();
+            if (callbackName in window) {
+              delete window[callbackName];
             }
           }
+        }
 
-          window[callbackName] = response => {
-            clearTimeout(abortTimeout);
-            xhr.abort();
-            _xhrSuccess(response, xhr, options);
-          };
+        window[callbackName] = response => {
+          clearTimeout(abortTimeout);
+          xhr.abort();
+          _xhrSuccess(response, xhr, options);
+        };
 
-          script.src = options.url.replace(/=\?/, '=' + callbackName);
-          Baic('head').append(script);
+        script.src = options.url.replace(/=\?/, '=' + callbackName);
+        $('head').append(script);
 
-          if (options.timeout > 0) {
-            abortTimeout = setTimeout(_xhrTimeout, options.timeout, xhr, options);
-          }
+        if (options.timeout > 0) {
+          abortTimeout = setTimeout(_xhrTimeout, options.timeout, xhr, options);
+        }
 
-          return xhr;
-        } else {
-          return console.error('Unable to make jsonp synchronous call.');
-        }
-      },
-      get(url, data, success, dataType) {
-        if (Baic.isFunction(data)) {
-          dataType = success;
-          success = data;
-          data = null;
-        }
-        return Baic.ajax({
-          url: url,
-          data: data,
-          success: success,
-          dataType: dataType
-        });
-      },
-      post(url, data, success, dataType) {
-        if (Baic.isFunction(data)) {
-          dataType = success;
-          success = data;
-          data = null;
-        }
-        return _xhrForm.call(this, 'POST', url, data, success, dataType);
-      },
-      put(url, data, success, dataType) {
-        if (Baic.isFunction(data)) {
-          dataType = success;
-          success = data;
-          data = null;
-        }
-        return _xhrForm.call(this, 'PUT', url, data, success, dataType);
-      },
-      json(url, data, success) {
-        return Baic.ajax({
-          url: url,
-          data: data,
-          success: success,
-          dataType: _AJAX_DEFAULTS.MIME
-        });
-      },
-      delete(url, data, success, dataType) {
-        if (Baic.isFunction(data)) {
-          dataType = success;
-          success = data;
-          data = null;
-        }
-        return _xhrForm.call(this, 'DELETE', url, data, success, dataType);
+        return xhr;
+      } else {
+        return console.error('Unable to make jsonp synchronous call.');
       }
-    });
-  }
+    },
+    get(url, data, success, dataType) {
+      if ($.isFunction(data)) {
+        dataType = success;
+        success = data;
+        data = null;
+      }
+      return $.ajax({
+        url: url,
+        data: data,
+        success: success,
+        dataType: dataType
+      });
+    },
+    post(url, data, success, dataType) {
+      if ($.isFunction(data)) {
+        dataType = success;
+        success = data;
+        data = null;
+      }
+      return _xhrForm.call(this, 'POST', url, data, success, dataType);
+    },
+    put(url, data, success, dataType) {
+      if ($.isFunction(data)) {
+        dataType = success;
+        success = data;
+        data = null;
+      }
+      return _xhrForm.call(this, 'PUT', url, data, success, dataType);
+    },
+    json(url, data, success) {
+      return $.ajax({
+        url: url,
+        data: data,
+        success: success,
+        dataType: _AJAX_DEFAULTS.MIME
+      });
+    },
+    delete(url, data, success, dataType) {
+      if ($.isFunction(data)) {
+        dataType = success;
+        success = data;
+        data = null;
+      }
+      return _xhrForm.call(this, 'DELETE', url, data, success, dataType);
+    }
+  });
 
-  return Ajax;
-})
+});
 console.timeEnd('ajax');

@@ -14,6 +14,8 @@ console.time('view');;
 })((window, document, $) => {
   'use strict';
 
+  var _ViewEvents = {};
+
   var View = Object.extends(() => {
 
     var html = $('html');
@@ -93,10 +95,13 @@ console.time('view');;
       },
       on(fnName, fn) {
         if ($.isObject(fnName)) {
-          $.extend(this, fnName)
+          $.extend(_ViewEvents, fnName)
         } else {
-          this[fnName] = fn
+          _ViewEvents[fnName] = fn
         }
+      },
+      off(fnName) {
+        delete _ViewEvents[fnName]
       },
       static: {
         adaptive() {
@@ -148,8 +153,8 @@ console.time('view');;
               return $.url.decode(item)
             })
             var name = args.shift()
-            var fn = this[name] || window[name];
-            if(fn && $.isFunction(Fn)){
+            var fn = _ViewEvents[name] || window[name];
+            if(fn && $.isFunction(fn)){
               fn.apply(this, [event].concat(args))
             }
           } else {

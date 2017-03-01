@@ -22,6 +22,9 @@ console.time('url');;
       return /%u[0-9a-f]{4}/i.test(str) ? unescape(str) : decodeURIComponent(str);
     },
     build(query = {}, url = location.href) {
+      if(!/^(https?\:\/\/|\.\/|\.\.\/)/i.test(url)){
+        url = location.origin + url
+      }
       return url + Url.query(query, url.indexOf("?") >= 0 ? "&" : "?");
     },
     query(obj, prefix = "") {

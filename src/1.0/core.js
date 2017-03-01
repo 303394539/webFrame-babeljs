@@ -230,7 +230,7 @@ console.time('core');;
 			}
 		},
 		getWindow(obj) {
-			return Baic.isWindow(obj) ? obj : $.isDocument(obj) && obj.defaultView;
+			return Baic.isWindow(obj) ? obj : Baic.isDocument(obj) && obj.defaultView;
 		},
 		ready(callback) {
 			return new Promise(resolve => {

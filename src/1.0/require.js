@@ -1,6 +1,6 @@
 console.time('require');;
 ((factory) => {
-  
+
   if (typeof define === "function" && define.amd) {
 
     // AMD. Register as an anonymous module.
@@ -128,7 +128,7 @@ console.time('require');;
   }
 
   var Require = function(arr) {
-    if(!$.isArray(arr)){
+    if (!$.isArray(arr)) {
       arr = [arr];
     }
     return new Promise(resolve => {
@@ -142,6 +142,9 @@ console.time('require');;
         }
         isReady = true;
         resolve();
+      }
+      if (!isReady) {
+        isReady = EXP_READY.test(document.readyState);
       }
       if (!isReady) {
         if (document.addEventListener) {

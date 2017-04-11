@@ -1,6 +1,6 @@
 console.time('selector');;
 ((factory) => {
-  
+
   if (typeof define === "function" && define.amd) {
 
     // AMD. Register as an anonymous module.
@@ -60,7 +60,7 @@ console.time('selector');;
         elements = dom.getElementsByClassName(selector.substring(1));
       } else if (TAG_SELECTOR.test(selector)) {
         elements = dom.getElementsByTagName(selector);
-      } else if (ID_SELECTOR.test(selector)) {
+      } else if (ID_SELECTOR.test(selector) && dom === document) {
         elements = dom.getElementById(selector.substring(1));
         if (!elements) elements = [];
       } else {
